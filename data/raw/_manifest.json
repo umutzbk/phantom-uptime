@@ -1,0 +1,149 @@
+{
+  "operator": "Voltway Networks",
+  "seed": 20260910,
+  "extracted_at": "2026-09-05T02:00:00",
+  "disclaimer": "Fully synthetic scenario. No real operator, site, customer or telemetry data is used, copied or referenced.",
+  "pilot": {
+    "name": "Midlands and North of England pilot",
+    "regions": [
+      "East Midlands",
+      "North East",
+      "North West",
+      "West Midlands",
+      "Yorkshire"
+    ],
+    "cities": [
+      "Birmingham",
+      "Coventry",
+      "Derby",
+      "Hull",
+      "Leeds",
+      "Leicester",
+      "Liverpool",
+      "Manchester",
+      "Newcastle",
+      "Nottingham",
+      "Sheffield",
+      "Stoke-on-Trent",
+      "Wolverhampton",
+      "York"
+    ],
+    "excludes": "London",
+    "note": "Representative regional pilot, not a full national estate."
+  },
+  "window": {
+    "start": "2026-08-06",
+    "end": "2026-09-05",
+    "days": 30
+  },
+  "counts": {
+    "stations": 150,
+    "chargers": 600,
+    "connectors": 991,
+    "customers": 15000,
+    "status_events": 502488,
+    "charging_attempts": 167855,
+    "payments": 167855,
+    "faults": 1468,
+    "alerts": 123
+  },
+  "ground_truth": {
+    "note": "Held for validation only. The transformation layer must DETECT these from the data, never read them from here.",
+    "hero": "CHG-0034",
+    "impaired_chargers": [
+      "CHG-0004",
+      "CHG-0007",
+      "CHG-0013",
+      "CHG-0023",
+      "CHG-0034",
+      "CHG-0036",
+      "CHG-0040",
+      "CHG-0050",
+      "CHG-0066",
+      "CHG-0103",
+      "CHG-0129",
+      "CHG-0130",
+      "CHG-0161",
+      "CHG-0200",
+      "CHG-0232",
+      "CHG-0267",
+      "CHG-0292",
+      "CHG-0315",
+      "CHG-0348",
+      "CHG-0355",
+      "CHG-0377",
+      "CHG-0388",
+      "CHG-0392",
+      "CHG-0396",
+      "CHG-0405",
+      "CHG-0406",
+      "CHG-0443",
+      "CHG-0462",
+      "CHG-0463",
+      "CHG-0479",
+      "CHG-0490",
+      "CHG-0501",
+      "CHG-0513",
+      "CHG-0552",
+      "CHG-0586"
+    ],
+    "by_pattern": {
+      "silent": [
+        "CHG-0034",
+        "CHG-0161",
+        "CHG-0267",
+        "CHG-0315",
+        "CHG-0348",
+        "CHG-0396",
+        "CHG-0463",
+        "CHG-0490"
+      ],
+      "connector_dead": [
+        "CHG-0040",
+        "CHG-0066",
+        "CHG-0129",
+        "CHG-0130",
+        "CHG-0232",
+        "CHG-0462",
+        "CHG-0501",
+        "CHG-0513",
+        "CHG-0552"
+      ],
+      "payment_terminal": [
+        "CHG-0013",
+        "CHG-0292",
+        "CHG-0355",
+        "CHG-0405",
+        "CHG-0443",
+        "CHG-0479",
+        "CHG-0586"
+      ],
+      "low_power": [
+        "CHG-0007",
+        "CHG-0050",
+        "CHG-0103",
+        "CHG-0200",
+        "CHG-0377",
+        "CHG-0406"
+      ],
+      "abort_heavy": [
+        "CHG-0004",
+        "CHG-0023",
+        "CHG-0036",
+        "CHG-0388",
+        "CHG-0392"
+      ]
+    },
+    "invisible_to_status_reporting": [
+      "abort_heavy",
+      "connector_dead",
+      "low_power",
+      "payment_terminal",
+      "silent"
+    ],
+    "visible_to_status_reporting": [
+      "offline",
+      "faulted"
+    ]
+  }
+}

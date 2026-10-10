@@ -5,9 +5,9 @@
 
 # Generated: the simulator makes raw/, build_marts.py makes marts/. Both are
 # reproducible from the scripts, and marts/ is 130 MB.
-raw/
-marts/
-dist/
+/raw/
+/marts/
+/dist/
 
 # Captured live traces. demo_traces/ holds the committed set that replay needs.
 traces/*.json
