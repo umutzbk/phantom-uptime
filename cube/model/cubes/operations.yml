@@ -1,0 +1,412 @@
+# Operational detail: attempts, status, detected failures, alerts, faults.
+#
+# Everything the copilot can ask for about a specific charger, site or region
+# resolves through these cubes. The agent never writes SQL against the marts.
+
+cubes:
+  - name: charging_attempts
+    description: >
+      One row per charging attempt - a plug-in, successful or not. The grain is
+      the attempt, not the completed session, which is what makes delivered
+      reliability measurable at all.
+    sql: >
+      SELECT * FROM read_parquet('/data/fact_charging_attempt.parquet')
+
+    dimensions:
+      - name: attempt_id
+        sql: attempt_id
+        type: string
+        primary_key: true
+      - name: charger_id
+        sql: charger_id
+        type: string
+      - name: connector_id
+        sql: connector_id
+        type: string
+      - name: station_id
+        sql: station_id
+        type: string
+      - name: station_name
+        sql: station_name
+        type: string
+      - name: city
+        sql: city
+        type: string
+      - name: region
+        sql: region
+        type: string
+      - name: location_type
+        sql: location_type
+        type: string
+      - name: charger_power_kw
+        sql: max_power_kw
+        type: number
+      - name: customer_segment
+        sql: customer_segment
+        type: string
+      - name: outcome
+        description: success, zero_energy, payment_failed or aborted_short
+        sql: outcome
+        type: string
+      - name: auth_method
+        sql: auth_method
+        type: string
+      - name: stop_reason
+        sql: stop_reason
+        type: string
+      - name: day_type
+        sql: day_type
+        type: string
+      - name: hour_of_day
+        sql: hour_of_day
+        type: number
+      - name: attempt_date
+        sql: attempt_date
+        type: time
+      - name: started_at
+        sql: start_ts
+        type: time
+
+    measures:
+      - name: attempted_sessions
+        description: Every plug-in, whether or not energy flowed.
+        sql: attempt_id
+        type: count
+
+      - name: successful_sessions
+        description: Attempts that transferred meaningful energy.
+        sql: attempt_id
+        type: count
+        filters:
+          - sql: "{CUBE}.is_successful"
+
+      - name: failed_sessions
+        sql: attempt_id
+        type: count
+        filters:
+          - sql: "NOT {CUBE}.is_successful"
+
+      - name: zero_kwh_sessions
+        description: >-
+          Attempts that transferred no energy at all, counted across every
+          outcome category. Wider than the zero_energy outcome label, which is
+          one category among several: a payment failure or an aborted session
+          can also deliver nothing.
+        sql: attempt_id
+        type: count
+        filters:
+          - sql: "{CUBE}.energy_kwh = 0"
+
+      - name: delivered_reliability_percent
+        description: successful_sessions / attempted_sessions, as a percentage.
+        sql: >
+          100.0 * SUM(CASE WHEN {CUBE}.is_successful THEN 1 ELSE 0 END)
+          / NULLIF(COUNT({CUBE}.attempt_id), 0)
+        type: number
+        format: percent
+
+      - name: kwh_delivered
+        sql: energy_kwh
+        type: sum
+
+      - name: average_kwh_per_session
+        description: Mean energy across successful attempts only.
+        sql: >
+          SUM(CASE WHEN {CUBE}.is_successful THEN {CUBE}.energy_kwh ELSE 0 END)
+          / NULLIF(SUM(CASE WHEN {CUBE}.is_successful THEN 1 ELSE 0 END), 0)
+        type: number
+
+      - name: average_tariff
+        description: Volume-weighted mean unit price, GBP per kWh.
+        sql: unit_price_gbp_per_kwh
+        type: avg
+
+      - name: revenue_gbp
+        sql: revenue_gbp
+        type: sum
+        format: currency
+
+      - name: average_power_kw
+        description: Mean delivered power across successful attempts.
+        sql: >
+          SUM(CASE WHEN {CUBE}.is_successful THEN {CUBE}.avg_power_kw ELSE 0 END)
+          / NULLIF(SUM(CASE WHEN {CUBE}.is_successful THEN 1 ELSE 0 END), 0)
+        type: number
+
+  # ---------------------------------------------------------------------------
+  - name: charger_status_daily
+    description: >
+      Charger by day status minutes. The basis for reported reliability. Uptime
+      is time in a non-fault operational status.
+    sql: >
+      SELECT * FROM read_parquet('/data/agg_charger_status_daily.parquet')
+
+    dimensions:
+      - name: charger_id
+        sql: charger_id
+        type: string
+      - name: station_id
+        sql: station_id
+        type: string
+      - name: status_date
+        sql: status_date
+        type: time
+
+    measures:
+      - name: charger_status_minutes
+        sql: total_minutes
+        type: sum
+      - name: uptime_minutes
+        sql: uptime_minutes
+        type: sum
+      - name: available_minutes
+        sql: available_minutes
+        type: sum
+      - name: preparing_minutes
+        description: >
+          Plugged in but not yet charging. A unit that cannot deliver energy
+          accumulates this without ever reaching Charging.
+        sql: preparing_minutes
+        type: sum
+      - name: charging_minutes
+        sql: charging_minutes
+        type: sum
+      - name: faulted_minutes
+        sql: faulted_minutes
+        type: sum
+      - name: offline_minutes
+        sql: offline_minutes
+        type: sum
+      - name: reported_reliability_percent
+        description: uptime_minutes / total_minutes, as a percentage.
+        sql: >
+          100.0 * SUM({CUBE}.uptime_minutes) / NULLIF(SUM({CUBE}.total_minutes), 0)
+        type: number
+        format: percent
+
+  # ---------------------------------------------------------------------------
+  - name: silent_failures
+    description: >
+      Chargers detected as impaired while status reporting shows them healthy.
+      Detected from the data by the transformation layer - never read from any
+      ground-truth list. One row per charger episode.
+    sql: >
+      SELECT * FROM read_parquet('/data/mart_silent_failures.parquet')
+
+    dimensions:
+      - name: charger_id
+        sql: charger_id
+        type: string
+        primary_key: true
+        # Primary keys are private by default, and with dev mode off Cube
+        # enforces that. The tools ask for this one by name, so it has to say
+        # so out loud: dev mode was hiding the difference.
+        public: true
+      - name: station_id
+        sql: station_id
+        type: string
+      - name: station_name
+        sql: station_name
+        type: string
+      - name: city
+        sql: city
+        type: string
+      - name: region
+        sql: region
+        type: string
+      - name: location_type
+        sql: location_type
+        type: string
+      - name: failure_pattern
+        description: >
+          silent_total, connector_fault_partial, payment_terminal, low_power,
+          aborted_short or degraded_unclassified.
+        sql: failure_pattern
+        type: string
+      - name: confidence
+        sql: confidence
+        type: string
+      - name: is_ongoing
+        description: Still failing at the end of the observed period.
+        sql: is_ongoing
+        type: boolean
+      - name: dispatch_priority
+        description: >
+          Triage order. Episodes still running rank first, then by daily loss
+          rate - you dispatch on what is still bleeding, not on sunk cost.
+        sql: dispatch_priority
+        type: number
+      - name: rank_by_revenue_at_risk
+        sql: rank_by_revenue_at_risk
+        type: number
+      - name: observed_start
+        sql: observed_start
+        type: time
+      - name: observed_end
+        sql: observed_end
+        type: time
+      - name: window_days
+        sql: window_days
+        type: number
+      - name: recommended_action
+        sql: recommended_action
+        type: string
+      - name: reported_uptime_percent
+        sql: reported_uptime_percent
+        type: number
+      - name: delivered_success_percent
+        sql: delivered_success_percent
+        type: number
+      - name: peer_success_percent
+        sql: peer_success_percent
+        type: number
+
+    measures:
+      - name: silent_failure_count
+        sql: charger_id
+        type: count
+      - name: ongoing_count
+        sql: charger_id
+        type: count
+        filters:
+          - sql: "{CUBE}.is_ongoing"
+      - name: estimated_revenue_at_risk_gbp
+        description: >
+          Estimate for operational prioritisation, not an accounting-grade
+          lost-revenue calculation.
+        sql: estimated_revenue_at_risk_gbp
+        type: sum
+        format: currency
+      - name: daily_loss_rate_gbp
+        sql: daily_loss_rate_gbp
+        type: sum
+        format: currency
+      - name: ongoing_daily_loss_rate_gbp
+        description: >
+          Combined daily bleed rate across episodes that are STILL running.
+          This is the only rate it is honest to project forward - a closed
+          episode is not costing anything today.
+        sql: daily_loss_rate_gbp
+        type: sum
+        format: currency
+        filters:
+          - sql: "{CUBE}.is_ongoing"
+      - name: estimated_lost_sessions
+        sql: estimated_lost_sessions
+        type: sum
+      - name: estimated_lost_kwh
+        sql: estimated_lost_kwh
+        type: sum
+      - name: attempted_sessions
+        sql: attempted_sessions
+        type: sum
+      - name: failed_sessions
+        sql: failed_sessions
+        type: sum
+
+  # ---------------------------------------------------------------------------
+  - name: alerts
+    description: >
+      The operator's existing rule-based monitoring queue. It watches the fault
+      log, so it can only ever surface what the fault log contains.
+    sql: >
+      SELECT * FROM read_parquet('/data/fact_alert.parquet')
+
+    dimensions:
+      - name: alert_id
+        sql: alert_id
+        type: string
+        primary_key: true
+      - name: charger_id
+        sql: charger_id
+        type: string
+      - name: station_name
+        sql: station_name
+        type: string
+      - name: region
+        sql: region
+        type: string
+      - name: rule_id
+        sql: rule_id
+        type: string
+      - name: severity
+        sql: severity
+        type: string
+      - name: created_at
+        sql: created_ts
+        type: time
+
+    measures:
+      - name: alert_count
+        sql: alert_id
+        type: count
+      - name: alert_device_count
+        sql: charger_id
+        type: count_distinct
+
+  # ---------------------------------------------------------------------------
+  - name: faults
+    description: Charger management system fault log.
+    sql: >
+      SELECT * FROM read_parquet('/data/fact_fault.parquet')
+
+    dimensions:
+      - name: fault_id
+        sql: fault_id
+        type: string
+        primary_key: true
+      - name: charger_id
+        sql: charger_id
+        type: string
+      - name: fault_type
+        sql: fault_code
+        type: string
+      - name: is_open
+        sql: is_open
+        type: boolean
+      - name: opened_at
+        sql: opened_ts
+        type: time
+
+    measures:
+      - name: fault_count
+        sql: fault_id
+        type: count
+      - name: faulted_minutes
+        sql: duration_min
+        type: sum
+
+  # ---------------------------------------------------------------------------
+  - name: status_intervals
+    description: >
+      Event-level status history, for drilling into a specific charger. The
+      copilot queries rollups first and comes here only for evidence.
+    sql: >
+      SELECT * FROM read_parquet('/data/fact_status_interval.parquet')
+
+    dimensions:
+      - name: charger_id
+        sql: charger_id
+        type: string
+      - name: station_id
+        sql: station_id
+        type: string
+      - name: status
+        sql: status
+        type: string
+      - name: counts_as_uptime
+        sql: counts_as_uptime
+        type: boolean
+      - name: interval_start
+        sql: interval_start
+        type: time
+      - name: interval_end
+        sql: interval_end
+        type: time
+
+    measures:
+      - name: interval_count
+        type: count
+      - name: minutes
+        sql: minutes
+        type: sum

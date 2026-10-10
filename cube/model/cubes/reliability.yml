@@ -1,0 +1,153 @@
+# Governed reliability metrics.
+#
+# These definitions are the contract between the data platform and the agent.
+# The copilot may not compute reliability itself and may not write SQL; it asks
+# Cube for a named metric and gets the same number every time.
+#
+# Two numbers on two different bases, deliberately:
+#   reported  = share of TIME in a non-fault operational status
+#   delivered = share of ATTEMPTS that actually transferred energy
+# They are not the same unit. The difference between them is the point.
+
+cubes:
+  - name: reliability_summary
+    description: >
+      Pilot-wide headline reliability for the observed period. Single row.
+      Use this for "what is our reliability this month" rather than
+      re-aggregating the underlying facts.
+    sql: >
+      SELECT * FROM read_parquet('/data/mart_reliability_summary.parquet')
+
+    dimensions:
+      - name: period_start
+        sql: period_start
+        type: time
+      - name: period_end
+        sql: period_end
+        type: time
+
+    measures:
+      - name: reported_reliability_percent
+        description: >
+          Share of charger-time spent in a non-fault operational status
+          (Available, Preparing, Charging). This is the status-derived number an
+          operator publishes.
+        sql: reported_reliability_percent
+        type: max
+        format: percent
+
+      - name: delivered_reliability_percent
+        description: >
+          Share of charging attempts that actually delivered energy. This is
+          what a driver experiences.
+        sql: delivered_reliability_percent
+        type: max
+        format: percent
+
+      - name: reliability_gap_points
+        description: >
+          reported_reliability_percent minus delivered_reliability_percent, in
+          percentage points. NOT the failure rate - the two differ by the
+          downtime that status reporting already captures.
+        sql: reliability_gap_points
+        type: max
+
+      - name: delivered_failure_rate_points
+        description: >
+          Share of attempts that failed, in percentage points. Equals
+          reliability_gap_points plus reported_downtime_points.
+        sql: delivered_failure_rate_points
+        type: max
+
+      - name: reported_downtime_points
+        description: Share of charger-time in Faulted or Unavailable.
+        sql: reported_downtime_points
+        type: max
+
+      - name: failure_points_from_detected_devices
+        description: >
+          Portion of the delivered failure rate attributable to chargers the
+          detector flagged. This is the actionable part.
+        sql: failure_points_from_detected_devices
+        type: max
+
+      - name: failure_points_baseline_diffuse
+        description: >
+          Portion of the delivered failure rate spread thinly across the estate
+          - declines, handshake failures, drivers giving up. Not fixable by
+          dispatching an engineer.
+        sql: failure_points_baseline_diffuse
+        type: max
+
+      - name: attempted_sessions
+        sql: attempted_sessions
+        type: max
+      - name: successful_sessions
+        sql: successful_sessions
+        type: max
+      - name: failed_sessions
+        sql: failed_sessions
+        type: max
+      - name: kwh_delivered
+        sql: kwh_delivered
+        type: max
+      - name: revenue_gbp
+        sql: revenue_gbp
+        type: max
+
+  # ---------------------------------------------------------------------------
+  - name: alert_blindspot
+    description: >
+      The gap between what the existing rule-based monitoring can see and what
+      the detector found. Single row. This is the headline finding of the pilot.
+    sql: >
+      SELECT * FROM read_parquet('/data/mart_alert_blindspot.parquet')
+
+    dimensions:
+      - name: observed_period_start
+        sql: observed_period_start
+        type: time
+      - name: observed_period_end
+        sql: observed_period_end
+        type: time
+
+    measures:
+      - name: visible_alert_count
+        description: Alerts currently open in the operations queue.
+        sql: visible_alert_count
+        type: max
+      - name: visible_alert_device_count
+        description: Distinct chargers appearing in that alert queue.
+        sql: visible_alert_device_count
+        type: max
+      - name: silent_failure_count
+        description: >
+          Chargers the detector flagged as impaired while status reporting shows
+          them healthy.
+        sql: silent_failure_device_count
+        type: max
+      - name: alert_silent_overlap
+        description: >
+          How many detected silent failures also appear in the alert queue.
+          Zero is the finding: none of them do.
+        sql: alert_silent_failure_overlap
+        type: max
+      - name: hidden_revenue_at_risk
+        description: >
+          Total estimated revenue at risk across detected silent failures for
+          the observed period. An estimate for operational prioritisation, not
+          an accounting-grade lost-revenue figure.
+        sql: hidden_revenue_at_risk_gbp
+        type: max
+        format: currency
+      - name: hidden_daily_loss_rate
+        description: Combined daily bleed rate across detected silent failures.
+        sql: hidden_daily_loss_rate_gbp
+        type: max
+        format: currency
+      - name: pilot_chargers
+        sql: pilot_chargers
+        type: max
+      - name: pilot_stations
+        sql: pilot_stations
+        type: max

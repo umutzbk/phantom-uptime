@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+!.env.production.example
+__pycache__
+*.pyc
+raw/
+marts/
+traces/
+_out_of_scope/
+scripts/
+*.pdf
+*.md
+!DEPLOY.md
+_patch_*.py
+_link_*.py

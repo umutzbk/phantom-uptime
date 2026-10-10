@@ -1,0 +1,595 @@
+{
+  "question": "Draft an operations email for CHG-0034.",
+  "mode": "live",
+  "answer": "The draft recommends a physical inspection at Birmingham Motorway 006, on the basis that CHG-0034 reported 100% uptime with no faults or alerts while delivering nothing to drivers over the detected episode of 2 to 4 September 2026 (63 attempts, none successful, against 95.8% success on its site peers in the same window).\n\nThe single figure that justifies the dispatch is the estimated revenue at risk of GBP 1,151.24 over that three-day episode, at a current rate of GBP 383.75 per day, with the episode still running as of 4 September 2026. That is an estimate for operational prioritisation, not accounting-grade lost revenue.\n\nNothing has been sent and no ticket has been raised: the email and the P2 field maintenance ticket below are drafts and need a person to approve and send them.",
+  "plan": [],
+  "tool_calls": [
+    {
+      "type": "tool_call",
+      "tool": "get_charger_evidence",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 2623,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "window_scope": "detected failure episode",
+        "station_id": "STN-006",
+        "station_name": "Birmingham Motorway 006",
+        "attempted_sessions": 63,
+        "successful_sessions": 0,
+        "failed_sessions": 63,
+        "zero_kwh_sessions": 63,
+        "kwh_delivered": 0.0,
+        "revenue_gbp": 0.0,
+        "delivered_success_percent": 0.0,
+        "avg_power_kw": 0.0,
+        "reported_uptime_percent": 100.0,
+        "fault_events": 0,
+        "alerts_raised": 0,
+        "charging_sessions_started_in_window": 0,
+        "last_successful_charge_started": "2026-09-01 23:41:00",
+        "charging_minutes_note": "Any Charging minutes shown here are the tail of a session that began before the episode started and ran across midnight. No successful session started inside this window.",
+        "episode_delivered_nothing": true
+      },
+      "result": {
+        "tool": "get_charger_evidence",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-09-02",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "window_scope": "detected failure episode",
+          "station_id": "STN-006",
+          "station_name": "Birmingham Motorway 006",
+          "attempted_sessions": 63,
+          "successful_sessions": 0,
+          "failed_sessions": 63,
+          "zero_kwh_sessions": 63,
+          "kwh_delivered": 0.0,
+          "revenue_gbp": 0.0,
+          "delivered_success_percent": 0.0,
+          "avg_power_kw": 0.0,
+          "reported_uptime_percent": 100.0,
+          "fault_events": 0,
+          "alerts_raised": 0,
+          "peer_comparison": {
+            "peer_attempted_sessions": 212,
+            "peer_successful_sessions": 203,
+            "peer_delivered_success_percent": 95.75,
+            "peer_average_power_kw": 55.7
+          },
+          "status_minutes": {
+            "available": 4000.0,
+            "preparing": 315.0,
+            "charging": 5.0,
+            "faulted": 0.0,
+            "offline": 0.0
+          },
+          "charging_sessions_started_in_window": 0,
+          "last_successful_charge_started": "2026-09-01 23:41:00",
+          "charging_minutes_note": "Any Charging minutes shown here are the tail of a session that began before the episode started and ran across midnight. No successful session started inside this window.",
+          "episode_delivered_nothing": true,
+          "detection": {
+            "flagged": true,
+            "failure_pattern": "silent_total",
+            "is_ongoing": true,
+            "dispatch_priority": 1,
+            "confidence": "high",
+            "observed_start": "2026-09-02",
+            "observed_end": "2026-09-04",
+            "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing"
+          },
+          "full_period_context": {
+            "attempted_sessions": 439,
+            "successful_sessions": 359,
+            "kwh_delivered": 12010.5,
+            "delivered_success_percent": 81.78
+          },
+          "full_period_window": {
+            "start": "2026-08-06",
+            "end": "2026-09-04"
+          }
+        },
+        "metric_definitions": {
+          "delivered_reliability_percent": "successful_sessions / attempted_sessions, as a percentage.",
+          "reported_reliability_percent": "uptime_minutes / total_minutes, as a percentage.",
+          "preparing_minutes": "Plugged in but not yet charging. A unit that cannot deliver energy accumulates this without ever reaching Charging.",
+          "alert_count": "no description published in the semantic layer",
+          "fault_count": "no description published in the semantic layer",
+          "zero_kwh_sessions": "Attempts that transferred no energy at all, counted across every outcome category. Wider than the zero_energy outcome label, which is one category among several: a payment failure or an aborted session can also deliver nothing.",
+          "failed_sessions": "no description published in the semantic layer",
+          "attempted_sessions": "Every plug-in, whether or not energy flowed.",
+          "successful_sessions": "Attempts that transferred meaningful energy."
+        },
+        "assumptions": [
+          "Peer comparison uses the other chargers at the same station over the same window, so demand conditions are comparable.",
+          "Headline figures cover the ACTIVE EPISODE only. full_period_context covers the whole observed month. The contrast between them is what shows the unit was working before it stopped - do not present them as the same window."
+        ],
+        "evidence": {
+          "attempts_by_outcome": [
+            {
+              "outcome": "zero_energy",
+              "attempts": 63,
+              "kwh": 0.0
+            }
+          ],
+          "status_timeline": [
+            {
+              "status": "Available",
+              "transitions": 62,
+              "minutes": 4000.0
+            },
+            {
+              "status": "Preparing",
+              "transitions": 63,
+              "minutes": 315.0
+            }
+          ],
+          "timeline_note": "Counts only status changes that began inside the window shown.",
+          "outcome_note": "attempts_by_outcome splits the attempts by outcome label. The zero_energy row is one of those labels, not the total that delivered nothing: use metrics.zero_kwh_sessions for that, which also counts payment failures and aborted sessions that transferred no energy."
+        },
+        "caveats": [
+          "Absence of a fault or alert is evidence about the monitoring, not evidence that the charger is healthy.",
+          "Two counts here are close but not the same: failed_sessions is every attempt that did not succeed, zero_kwh_sessions is every attempt that delivered no energy. A session can fail having delivered a little energy, so the second is the smaller number. Quote whichever you mean and name it."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "estimate_commercial_impact",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 1472,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "station_name": "Birmingham Motorway 006",
+        "failure_pattern": "silent_total",
+        "confidence": "high",
+        "is_ongoing": true
+      },
+      "result": {
+        "tool": "estimate_commercial_impact",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "station_name": "Birmingham Motorway 006",
+          "failure_pattern": "silent_total",
+          "confidence": "high",
+          "is_ongoing": true,
+          "observed_window": {
+            "start": "2026-09-02",
+            "end": "2026-09-04",
+            "days": 3
+          },
+          "this_charger": {
+            "attempted_sessions": 63,
+            "failed_sessions": 63,
+            "delivered_success_percent": 0.0,
+            "peer_success_percent": 95.75,
+            "estimated_lost_sessions": 40.6,
+            "estimated_lost_kwh": 1464.7,
+            "observed_revenue_at_risk_gbp": 1151.24,
+            "daily_loss_rate_gbp": 383.75
+          },
+          "all_detected_failures": {
+            "device_count": 26,
+            "still_failing_now": 3,
+            "observed_revenue_at_risk_gbp": 12648.95,
+            "combined_daily_loss_rate_gbp": 707.92
+          },
+          "run_rate_estimate": {
+            "basis": "EXTRAPOLATED from the observed daily loss rate of episodes that are still running. Closed episodes are excluded.",
+            "charger_is_ongoing": true,
+            "charger_monthly_gbp": 11512.5,
+            "charger_annualised_gbp": 140068.75,
+            "ongoing_portfolio_daily_gbp": 707.92,
+            "ongoing_portfolio_monthly_gbp": 21237.6,
+            "ongoing_portfolio_annualised_gbp": 258390.8
+          }
+        },
+        "metric_definitions": {
+          "estimated_lost_sessions": "no description published in the semantic layer",
+          "estimated_lost_kwh": "no description published in the semantic layer",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "Expected sessions come from the other chargers at the same station over the same window.",
+          "Drivers turned away are assumed not to have simply charged on a neighbouring unit, which makes this an upper bound.",
+          "Average kWh and tariff are taken from peer sessions in the window.",
+          "Run-rate figures assume the fault continues unrepaired."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Observed figures cover the detected episode only. Monthly and annualised figures are extrapolations, not measurements.",
+          "Run-rate projections count only episodes still running. A closed episode costs nothing today and is not annualised."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "draft_ops_action",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 1763,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "drafted": true,
+        "failure_pattern": "silent_total",
+        "channel": "email",
+        "subject": "[ACTION] Birmingham Motorway 006 - CHG-0034 reporting available but delivering no energy",
+        "body": "CHG-0034 at Birmingham Motorway 006 needs a physical inspection.\n\nWhat the monitoring shows\n  Reported uptime over the episode: 100.00%\n  Faults logged: 0    Alerts raised: 0\n  Status minutes: available 4000, preparing 315, charging 5, faulted 0, offline 0\n\nWhat drivers experienced (2026-09-02 to 2026-09-04, 3 days, still failing)\n  Charging attempts: 63\n  Successful: 0   Delivered success rate: 0%\n  Energy delivered: 0.0 kWh\n  Other chargers at this site over the same period: 95.8% success\n\nWhy this is being raised\n  The unit never enters a fault or offline state, so it does not appear in the alert queue. The only signal is the absence of energy while its site peers charge normally.\n\nCommercial impact\n  Estimated lost sessions: 40.6\n  Estimated lost energy: 1465 kWh\n  Estimated revenue at risk: GBP 1,151.24\n  Current loss rate: GBP 383.75 per day\n  This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.\n\nRecommended action\n  Dispatch engineer - physical inspection, unit reports available but delivers nothing\n\nConfidence: high.   Data as of 2026-09-04.\nPrepared by the reliability copilot from governed metrics. No action has been taken and no engineer has been dispatched.",
+        "requires_human_approval": true,
+        "sent": false
+      },
+      "result": {
+        "tool": "draft_ops_action",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "drafted": true,
+          "failure_pattern": "silent_total",
+          "channel": "email",
+          "to": [
+            "field-operations@voltway.example"
+          ],
+          "cc": [
+            "regional-manager@voltway.example"
+          ],
+          "subject": "[ACTION] Birmingham Motorway 006 - CHG-0034 reporting available but delivering no energy",
+          "body": "CHG-0034 at Birmingham Motorway 006 needs a physical inspection.\n\nWhat the monitoring shows\n  Reported uptime over the episode: 100.00%\n  Faults logged: 0    Alerts raised: 0\n  Status minutes: available 4000, preparing 315, charging 5, faulted 0, offline 0\n\nWhat drivers experienced (2026-09-02 to 2026-09-04, 3 days, still failing)\n  Charging attempts: 63\n  Successful: 0   Delivered success rate: 0%\n  Energy delivered: 0.0 kWh\n  Other chargers at this site over the same period: 95.8% success\n\nWhy this is being raised\n  The unit never enters a fault or offline state, so it does not appear in the alert queue. The only signal is the absence of energy while its site peers charge normally.\n\nCommercial impact\n  Estimated lost sessions: 40.6\n  Estimated lost energy: 1465 kWh\n  Estimated revenue at risk: GBP 1,151.24\n  Current loss rate: GBP 383.75 per day\n  This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.\n\nRecommended action\n  Dispatch engineer - physical inspection, unit reports available but delivers nothing\n\nConfidence: high.   Data as of 2026-09-04.\nPrepared by the reliability copilot from governed metrics. No action has been taken and no engineer has been dispatched.",
+          "requires_human_approval": true,
+          "sent": false,
+          "ticket_draft": {
+            "queue": "field_maintenance",
+            "priority": "P2",
+            "summary": "CHG-0034 - silent_total - Birmingham Motorway 006",
+            "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing"
+          }
+        },
+        "metric_definitions": {},
+        "assumptions": [
+          "Every figure in the draft came from the tools above, not from the language model."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is a draft. Nothing is sent, no ticket is created, and no engineer is dispatched without a person approving it."
+        ]
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "type": "question",
+      "question": "Draft an operations email for CHG-0034.",
+      "model": "claude-opus-5",
+      "effort": "medium",
+      "mode": "live"
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_charger_evidence",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 2623,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "window_scope": "detected failure episode",
+        "station_id": "STN-006",
+        "station_name": "Birmingham Motorway 006",
+        "attempted_sessions": 63,
+        "successful_sessions": 0,
+        "failed_sessions": 63,
+        "zero_kwh_sessions": 63,
+        "kwh_delivered": 0.0,
+        "revenue_gbp": 0.0,
+        "delivered_success_percent": 0.0,
+        "avg_power_kw": 0.0,
+        "reported_uptime_percent": 100.0,
+        "fault_events": 0,
+        "alerts_raised": 0,
+        "charging_sessions_started_in_window": 0,
+        "last_successful_charge_started": "2026-09-01 23:41:00",
+        "charging_minutes_note": "Any Charging minutes shown here are the tail of a session that began before the episode started and ran across midnight. No successful session started inside this window.",
+        "episode_delivered_nothing": true
+      },
+      "result": {
+        "tool": "get_charger_evidence",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-09-02",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "window_scope": "detected failure episode",
+          "station_id": "STN-006",
+          "station_name": "Birmingham Motorway 006",
+          "attempted_sessions": 63,
+          "successful_sessions": 0,
+          "failed_sessions": 63,
+          "zero_kwh_sessions": 63,
+          "kwh_delivered": 0.0,
+          "revenue_gbp": 0.0,
+          "delivered_success_percent": 0.0,
+          "avg_power_kw": 0.0,
+          "reported_uptime_percent": 100.0,
+          "fault_events": 0,
+          "alerts_raised": 0,
+          "peer_comparison": {
+            "peer_attempted_sessions": 212,
+            "peer_successful_sessions": 203,
+            "peer_delivered_success_percent": 95.75,
+            "peer_average_power_kw": 55.7
+          },
+          "status_minutes": {
+            "available": 4000.0,
+            "preparing": 315.0,
+            "charging": 5.0,
+            "faulted": 0.0,
+            "offline": 0.0
+          },
+          "charging_sessions_started_in_window": 0,
+          "last_successful_charge_started": "2026-09-01 23:41:00",
+          "charging_minutes_note": "Any Charging minutes shown here are the tail of a session that began before the episode started and ran across midnight. No successful session started inside this window.",
+          "episode_delivered_nothing": true,
+          "detection": {
+            "flagged": true,
+            "failure_pattern": "silent_total",
+            "is_ongoing": true,
+            "dispatch_priority": 1,
+            "confidence": "high",
+            "observed_start": "2026-09-02",
+            "observed_end": "2026-09-04",
+            "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing"
+          },
+          "full_period_context": {
+            "attempted_sessions": 439,
+            "successful_sessions": 359,
+            "kwh_delivered": 12010.5,
+            "delivered_success_percent": 81.78
+          },
+          "full_period_window": {
+            "start": "2026-08-06",
+            "end": "2026-09-04"
+          }
+        },
+        "metric_definitions": {
+          "delivered_reliability_percent": "successful_sessions / attempted_sessions, as a percentage.",
+          "reported_reliability_percent": "uptime_minutes / total_minutes, as a percentage.",
+          "preparing_minutes": "Plugged in but not yet charging. A unit that cannot deliver energy accumulates this without ever reaching Charging.",
+          "alert_count": "no description published in the semantic layer",
+          "fault_count": "no description published in the semantic layer",
+          "zero_kwh_sessions": "Attempts that transferred no energy at all, counted across every outcome category. Wider than the zero_energy outcome label, which is one category among several: a payment failure or an aborted session can also deliver nothing.",
+          "failed_sessions": "no description published in the semantic layer",
+          "attempted_sessions": "Every plug-in, whether or not energy flowed.",
+          "successful_sessions": "Attempts that transferred meaningful energy."
+        },
+        "assumptions": [
+          "Peer comparison uses the other chargers at the same station over the same window, so demand conditions are comparable.",
+          "Headline figures cover the ACTIVE EPISODE only. full_period_context covers the whole observed month. The contrast between them is what shows the unit was working before it stopped - do not present them as the same window."
+        ],
+        "evidence": {
+          "attempts_by_outcome": [
+            {
+              "outcome": "zero_energy",
+              "attempts": 63,
+              "kwh": 0.0
+            }
+          ],
+          "status_timeline": [
+            {
+              "status": "Available",
+              "transitions": 62,
+              "minutes": 4000.0
+            },
+            {
+              "status": "Preparing",
+              "transitions": 63,
+              "minutes": 315.0
+            }
+          ],
+          "timeline_note": "Counts only status changes that began inside the window shown.",
+          "outcome_note": "attempts_by_outcome splits the attempts by outcome label. The zero_energy row is one of those labels, not the total that delivered nothing: use metrics.zero_kwh_sessions for that, which also counts payment failures and aborted sessions that transferred no energy."
+        },
+        "caveats": [
+          "Absence of a fault or alert is evidence about the monitoring, not evidence that the charger is healthy.",
+          "Two counts here are close but not the same: failed_sessions is every attempt that did not succeed, zero_kwh_sessions is every attempt that delivered no energy. A session can fail having delivered a little energy, so the second is the smaller number. Quote whichever you mean and name it."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "estimate_commercial_impact",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 1472,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "station_name": "Birmingham Motorway 006",
+        "failure_pattern": "silent_total",
+        "confidence": "high",
+        "is_ongoing": true
+      },
+      "result": {
+        "tool": "estimate_commercial_impact",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "station_name": "Birmingham Motorway 006",
+          "failure_pattern": "silent_total",
+          "confidence": "high",
+          "is_ongoing": true,
+          "observed_window": {
+            "start": "2026-09-02",
+            "end": "2026-09-04",
+            "days": 3
+          },
+          "this_charger": {
+            "attempted_sessions": 63,
+            "failed_sessions": 63,
+            "delivered_success_percent": 0.0,
+            "peer_success_percent": 95.75,
+            "estimated_lost_sessions": 40.6,
+            "estimated_lost_kwh": 1464.7,
+            "observed_revenue_at_risk_gbp": 1151.24,
+            "daily_loss_rate_gbp": 383.75
+          },
+          "all_detected_failures": {
+            "device_count": 26,
+            "still_failing_now": 3,
+            "observed_revenue_at_risk_gbp": 12648.95,
+            "combined_daily_loss_rate_gbp": 707.92
+          },
+          "run_rate_estimate": {
+            "basis": "EXTRAPOLATED from the observed daily loss rate of episodes that are still running. Closed episodes are excluded.",
+            "charger_is_ongoing": true,
+            "charger_monthly_gbp": 11512.5,
+            "charger_annualised_gbp": 140068.75,
+            "ongoing_portfolio_daily_gbp": 707.92,
+            "ongoing_portfolio_monthly_gbp": 21237.6,
+            "ongoing_portfolio_annualised_gbp": 258390.8
+          }
+        },
+        "metric_definitions": {
+          "estimated_lost_sessions": "no description published in the semantic layer",
+          "estimated_lost_kwh": "no description published in the semantic layer",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "Expected sessions come from the other chargers at the same station over the same window.",
+          "Drivers turned away are assumed not to have simply charged on a neighbouring unit, which makes this an upper bound.",
+          "Average kWh and tariff are taken from peer sessions in the window.",
+          "Run-rate figures assume the fault continues unrepaired."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Observed figures cover the detected episode only. Monthly and annualised figures are extrapolations, not measurements.",
+          "Run-rate projections count only episodes still running. A closed episode costs nothing today and is not annualised."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "draft_ops_action",
+      "arguments": {
+        "charger_id": "CHG-0034"
+      },
+      "ms": 1763,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "charger_id": "CHG-0034",
+        "drafted": true,
+        "failure_pattern": "silent_total",
+        "channel": "email",
+        "subject": "[ACTION] Birmingham Motorway 006 - CHG-0034 reporting available but delivering no energy",
+        "body": "CHG-0034 at Birmingham Motorway 006 needs a physical inspection.\n\nWhat the monitoring shows\n  Reported uptime over the episode: 100.00%\n  Faults logged: 0    Alerts raised: 0\n  Status minutes: available 4000, preparing 315, charging 5, faulted 0, offline 0\n\nWhat drivers experienced (2026-09-02 to 2026-09-04, 3 days, still failing)\n  Charging attempts: 63\n  Successful: 0   Delivered success rate: 0%\n  Energy delivered: 0.0 kWh\n  Other chargers at this site over the same period: 95.8% success\n\nWhy this is being raised\n  The unit never enters a fault or offline state, so it does not appear in the alert queue. The only signal is the absence of energy while its site peers charge normally.\n\nCommercial impact\n  Estimated lost sessions: 40.6\n  Estimated lost energy: 1465 kWh\n  Estimated revenue at risk: GBP 1,151.24\n  Current loss rate: GBP 383.75 per day\n  This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.\n\nRecommended action\n  Dispatch engineer - physical inspection, unit reports available but delivers nothing\n\nConfidence: high.   Data as of 2026-09-04.\nPrepared by the reliability copilot from governed metrics. No action has been taken and no engineer has been dispatched.",
+        "requires_human_approval": true,
+        "sent": false
+      },
+      "result": {
+        "tool": "draft_ops_action",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "charger_id": "CHG-0034",
+          "drafted": true,
+          "failure_pattern": "silent_total",
+          "channel": "email",
+          "to": [
+            "field-operations@voltway.example"
+          ],
+          "cc": [
+            "regional-manager@voltway.example"
+          ],
+          "subject": "[ACTION] Birmingham Motorway 006 - CHG-0034 reporting available but delivering no energy",
+          "body": "CHG-0034 at Birmingham Motorway 006 needs a physical inspection.\n\nWhat the monitoring shows\n  Reported uptime over the episode: 100.00%\n  Faults logged: 0    Alerts raised: 0\n  Status minutes: available 4000, preparing 315, charging 5, faulted 0, offline 0\n\nWhat drivers experienced (2026-09-02 to 2026-09-04, 3 days, still failing)\n  Charging attempts: 63\n  Successful: 0   Delivered success rate: 0%\n  Energy delivered: 0.0 kWh\n  Other chargers at this site over the same period: 95.8% success\n\nWhy this is being raised\n  The unit never enters a fault or offline state, so it does not appear in the alert queue. The only signal is the absence of energy while its site peers charge normally.\n\nCommercial impact\n  Estimated lost sessions: 40.6\n  Estimated lost energy: 1465 kWh\n  Estimated revenue at risk: GBP 1,151.24\n  Current loss rate: GBP 383.75 per day\n  This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.\n\nRecommended action\n  Dispatch engineer - physical inspection, unit reports available but delivers nothing\n\nConfidence: high.   Data as of 2026-09-04.\nPrepared by the reliability copilot from governed metrics. No action has been taken and no engineer has been dispatched.",
+          "requires_human_approval": true,
+          "sent": false,
+          "ticket_draft": {
+            "queue": "field_maintenance",
+            "priority": "P2",
+            "summary": "CHG-0034 - silent_total - Birmingham Motorway 006",
+            "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing"
+          }
+        },
+        "metric_definitions": {},
+        "assumptions": [
+          "Every figure in the draft came from the tools above, not from the language model."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is a draft. Nothing is sent, no ticket is created, and no engineer is dispatched without a person approving it."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "answer",
+      "text": "The draft recommends a physical inspection at Birmingham Motorway 006, on the basis that CHG-0034 reported 100% uptime with no faults or alerts while delivering nothing to drivers over the detected episode of 2 to 4 September 2026 (63 attempts, none successful, against 95.8% success on its site peers in the same window).\n\nThe single figure that justifies the dispatch is the estimated revenue at risk of GBP 1,151.24 over that three-day episode, at a current rate of GBP 383.75 per day, with the episode still running as of 4 September 2026. That is an estimate for operational prioritisation, not accounting-grade lost revenue.\n\nNothing has been sent and no ticket has been raised: the email and the P2 field maintenance ticket below are drafts and need a person to approve and send them."
+    },
+    {
+      "type": "done",
+      "turns": 3,
+      "elapsed_s": 17.5,
+      "usage": {
+        "input_tokens": 8336,
+        "output_tokens": 268
+      }
+    }
+  ],
+  "captured_at": "2026-09-06T22:36:07"
+}

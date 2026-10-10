@@ -1,0 +1,339 @@
+{
+  "question": "What is our reliability this month?",
+  "mode": "live",
+  "answer": "Reported reliability across the pilot estate is 99.26% for 6 August to 4 September 2026 (as of 4 September 2026). Delivered reliability over the same period is 95.29%, a gap of 3.96 percentage points. The first is status-derived uptime, measured per minute of charger-time in a non-fault state. The second is measured per charging attempt: 167,855 attempts, 159,954 of which transferred energy, and 7,901 that did not.\n\nThe two are not versions of the same measure, and the gap is where status-based monitoring overstates what drivers experienced. Of the 4.71 point delivered failure rate, 4.30 points are diffuse baseline failure spread thinly across the estate (declines, handshake errors, drivers abandoning attempts). That part is not fixable by dispatching an engineer. Only 0.40 points sit on the 26 chargers the detector flagged, accounting for 677 of the failed attempts. That is the actionable share.\n\nRevenue at risk on those detected chargers is estimated at \u00a312,648.95 for the period. Treat that as an operational prioritisation estimate, not accounting-grade lost revenue.\n\nTwo limits worth noting: reported reliability counts a unit that says it is operational but delivers no energy as uptime, and neither figure tells you why a given attempt failed. If useful, I can rank the 26 detected chargers by dispatch priority or break either number down by region.",
+  "plan": [
+    "I'll pull both reliability measures for the pilot period."
+  ],
+  "tool_calls": [
+    {
+      "type": "tool_call",
+      "tool": "get_reported_reliability",
+      "arguments": {},
+      "ms": 437,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "uptime_minutes": 25726971.5,
+        "total_minutes": 25920000.0,
+        "reported_downtime_points": 0.74
+      },
+      "result": {
+        "tool": "get_reported_reliability",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "uptime_minutes": 25726971.5,
+          "total_minutes": 25920000.0,
+          "reported_downtime_points": 0.74
+        },
+        "metric_definitions": {
+          "reported_reliability_percent": "uptime_minutes / total_minutes, as a percentage.",
+          "uptime_minutes": "no description published in the semantic layer",
+          "total_minutes": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "Uptime is time spent in a non-fault operational status (Available, Preparing, Charging).",
+          "Weighted by minutes, so a busy day and a quiet day are not averaged equally."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This measures availability, not whether a driver could charge. A unit that reports itself operational but delivers no energy counts here as uptime."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_delivered_reliability",
+      "arguments": {},
+      "ms": 138,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "delivered_reliability_percent": 95.29,
+        "attempted_sessions": 167855,
+        "successful_sessions": 159954,
+        "failed_sessions": 7901,
+        "delivered_failure_rate_points": 4.71
+      },
+      "result": {
+        "tool": "get_delivered_reliability",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "delivered_reliability_percent": 95.29,
+          "attempted_sessions": 167855,
+          "successful_sessions": 159954,
+          "failed_sessions": 7901,
+          "delivered_failure_rate_points": 4.71
+        },
+        "metric_definitions": {
+          "delivered_reliability_percent": "successful_sessions / attempted_sessions, as a percentage.",
+          "attempted_sessions": "Every plug-in, whether or not energy flowed.",
+          "successful_sessions": "Attempts that transferred meaningful energy.",
+          "failed_sessions": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "An attempt is one plug-in, successful or not.",
+          "Success means meaningful energy was transferred, not that a transaction record exists."
+        ],
+        "evidence": {},
+        "caveats": [
+          "Measured per attempt, while reported reliability is measured per minute. The two are not the same unit."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 248,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "type": "question",
+      "question": "What is our reliability this month?",
+      "model": "claude-opus-5",
+      "effort": "medium",
+      "mode": "live"
+    },
+    {
+      "type": "thought",
+      "text": "I'll pull both reliability measures for the pilot period."
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_reported_reliability",
+      "arguments": {},
+      "ms": 437,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "uptime_minutes": 25726971.5,
+        "total_minutes": 25920000.0,
+        "reported_downtime_points": 0.74
+      },
+      "result": {
+        "tool": "get_reported_reliability",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "uptime_minutes": 25726971.5,
+          "total_minutes": 25920000.0,
+          "reported_downtime_points": 0.74
+        },
+        "metric_definitions": {
+          "reported_reliability_percent": "uptime_minutes / total_minutes, as a percentage.",
+          "uptime_minutes": "no description published in the semantic layer",
+          "total_minutes": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "Uptime is time spent in a non-fault operational status (Available, Preparing, Charging).",
+          "Weighted by minutes, so a busy day and a quiet day are not averaged equally."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This measures availability, not whether a driver could charge. A unit that reports itself operational but delivers no energy counts here as uptime."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_delivered_reliability",
+      "arguments": {},
+      "ms": 138,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "delivered_reliability_percent": 95.29,
+        "attempted_sessions": 167855,
+        "successful_sessions": 159954,
+        "failed_sessions": 7901,
+        "delivered_failure_rate_points": 4.71
+      },
+      "result": {
+        "tool": "get_delivered_reliability",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "delivered_reliability_percent": 95.29,
+          "attempted_sessions": 167855,
+          "successful_sessions": 159954,
+          "failed_sessions": 7901,
+          "delivered_failure_rate_points": 4.71
+        },
+        "metric_definitions": {
+          "delivered_reliability_percent": "successful_sessions / attempted_sessions, as a percentage.",
+          "attempted_sessions": "Every plug-in, whether or not energy flowed.",
+          "successful_sessions": "Attempts that transferred meaningful energy.",
+          "failed_sessions": "no description published in the semantic layer"
+        },
+        "assumptions": [
+          "An attempt is one plug-in, successful or not.",
+          "Success means meaningful energy was transferred, not that a transaction record exists."
+        ],
+        "evidence": {},
+        "caveats": [
+          "Measured per attempt, while reported reliability is measured per minute. The two are not the same unit."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 248,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "answer",
+      "text": "Reported reliability across the pilot estate is 99.26% for 6 August to 4 September 2026 (as of 4 September 2026). Delivered reliability over the same period is 95.29%, a gap of 3.96 percentage points. The first is status-derived uptime, measured per minute of charger-time in a non-fault state. The second is measured per charging attempt: 167,855 attempts, 159,954 of which transferred energy, and 7,901 that did not.\n\nThe two are not versions of the same measure, and the gap is where status-based monitoring overstates what drivers experienced. Of the 4.71 point delivered failure rate, 4.30 points are diffuse baseline failure spread thinly across the estate (declines, handshake errors, drivers abandoning attempts). That part is not fixable by dispatching an engineer. Only 0.40 points sit on the 26 chargers the detector flagged, accounting for 677 of the failed attempts. That is the actionable share.\n\nRevenue at risk on those detected chargers is estimated at \u00a312,648.95 for the period. Treat that as an operational prioritisation estimate, not accounting-grade lost revenue.\n\nTwo limits worth noting: reported reliability counts a unit that says it is operational but delivers no energy as uptime, and neither figure tells you why a given attempt failed. If useful, I can rank the 26 detected chargers by dispatch priority or break either number down by region."
+    },
+    {
+      "type": "done",
+      "turns": 2,
+      "elapsed_s": 11.6,
+      "usage": {
+        "input_tokens": 6161,
+        "output_tokens": 464
+      }
+    }
+  ],
+  "captured_at": "2026-09-06T22:34:37"
+}

@@ -1,0 +1,151 @@
+{
+  "question": "Why is reported reliability different from delivered reliability?",
+  "mode": "live",
+  "answer": "They are two different measurements, not two versions of the same one. Across the pilot for 6 August to 4 September 2026 (as of 4 September 2026), reported reliability was 99.26 per cent and delivered reliability was 95.29 per cent, a gap of 3.96 percentage points.\n\nReported reliability is status-derived: the share of charger-time spent in a non-fault operational state. That is what an operator publishes. Delivered reliability is attempt-based: the share of driver charging attempts that actually transferred energy. Because the denominators differ (time in one case, attempts in the other), the two are not directly reconcilable, and the gap is where status-based monitoring overstates what drivers experienced.\n\nThe failure side breaks down as follows. The delivered failure rate was 4.71 percentage points, of which 0.74 points is downtime that status reporting already captured. Of that failure rate, 0.4 points sits on the 26 chargers the detector flagged, which is the actionable part, and 4.3 points is diffuse baseline failure spread thinly across the estate: declines, handshake errors, drivers abandoning a session. That baseline share is not fixable by dispatching an engineer. Revenue at risk on the detected chargers was \u00a312,648.95 for the period, an estimate for operational prioritisation rather than accounting-grade lost revenue.\n\nWhat this does not cover: it says nothing about why individual baseline failures occurred, and the detected set is limited to what the detector flagged in this window. This is a demonstration on synthetic pilot data, not a finding about the real estate.",
+  "plan": [],
+  "tool_calls": [
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 290,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "type": "question",
+      "question": "Why is reported reliability different from delivered reliability?",
+      "model": "claude-opus-5",
+      "effort": "medium",
+      "mode": "live"
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 290,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "answer",
+      "text": "They are two different measurements, not two versions of the same one. Across the pilot for 6 August to 4 September 2026 (as of 4 September 2026), reported reliability was 99.26 per cent and delivered reliability was 95.29 per cent, a gap of 3.96 percentage points.\n\nReported reliability is status-derived: the share of charger-time spent in a non-fault operational state. That is what an operator publishes. Delivered reliability is attempt-based: the share of driver charging attempts that actually transferred energy. Because the denominators differ (time in one case, attempts in the other), the two are not directly reconcilable, and the gap is where status-based monitoring overstates what drivers experienced.\n\nThe failure side breaks down as follows. The delivered failure rate was 4.71 percentage points, of which 0.74 points is downtime that status reporting already captured. Of that failure rate, 0.4 points sits on the 26 chargers the detector flagged, which is the actionable part, and 4.3 points is diffuse baseline failure spread thinly across the estate: declines, handshake errors, drivers abandoning a session. That baseline share is not fixable by dispatching an engineer. Revenue at risk on the detected chargers was \u00a312,648.95 for the period, an estimate for operational prioritisation rather than accounting-grade lost revenue.\n\nWhat this does not cover: it says nothing about why individual baseline failures occurred, and the detected set is limited to what the detector flagged in this window. This is a demonstration on synthetic pilot data, not a finding about the real estate."
+    },
+    {
+      "type": "done",
+      "turns": 2,
+      "elapsed_s": 10.7,
+      "usage": {
+        "input_tokens": 5233,
+        "output_tokens": 511
+      }
+    }
+  ],
+  "captured_at": "2026-09-06T22:34:48"
+}

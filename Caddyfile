@@ -1,0 +1,27 @@
+# SITE_ADDRESS is ":80" locally and a hostname on the server. Give Caddy a real
+# hostname and it fetches a certificate on its own, which is what makes the
+# Vercel frontend able to call this backend without mixed content.
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Server-sent events: hold the connection open and do not buffer, or the
+	# investigation trace arrives all at once when the answer is already done.
+	@stream path /api/chat/stream
+	reverse_proxy @stream api:8000 {
+		flush_interval -1
+	}
+
+	reverse_proxy api:8000
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy same-origin
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

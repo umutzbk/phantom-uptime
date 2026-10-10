@@ -1,0 +1,66 @@
+name: checks
+
+# The data fixtures are not committed, so the pipeline rebuilds them: the
+# simulator is seeded, so a run here produces byte-identical marts to a run on a
+# laptop. That is what makes the validators meaningful in CI rather than
+# decorative.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff bandit[toml]
+      - name: ruff
+        run: ruff check .
+      - name: bandit
+        run: bandit -c pyproject.toml -r api/
+
+  data-and-detection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install duckdb
+      - name: generate the synthetic estate
+        run: python simulate_source_systems.py
+      - name: build the analytical marts
+        run: python build_marts.py
+      - name: validate marts, metrics and the detector
+        run: python validate_marts.py
+
+  tools-and-traces:
+    runs-on: ubuntu-latest
+    needs: data-and-detection
+    # No Cube service here on purpose. The recorded investigations carry the tool
+    # results they were built from, so the gate verifies them without a semantic
+    # layer running. That is the property that makes it reproducible; pulling a
+    # gigabyte of container to prove it would undo the point.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: figure check unit behaviour
+        run: |
+          python - <<'PY'
+          from api import figure_check
+          r = figure_check.check("Revenue at risk is £1,151.24 and £9,999.00.",
+                                 [{"metrics": {"at_risk": 1151.24}}])
+          assert r["checked"] == 2, r
+          assert [u["text"] for u in r["unsourced"]] == ["£9,999.00"], r
+          print("figure check catches the unsourced figure and passes the real one")
+          PY
+      - name: validate the recorded investigations
+        run: python validate_traces.py

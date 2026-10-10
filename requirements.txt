@@ -1,0 +1,11 @@
+# Runtime only. build_marts.py and the simulator need duckdb, but nothing in the
+# served application touches a mart directly: the API talks to Cube and Cube
+# reads the parquet files.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+# 1.x or newer: output_config (effort) does not exist on the 0.x SDK, and the
+# server failed live mode on that difference alone.
+anthropic==1.4.0
+httpx==0.28.1
+python-dotenv==1.0.1
+python-multipart==0.0.20   # the login form posts multipart/form-data

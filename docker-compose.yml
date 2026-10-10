@@ -1,0 +1,90 @@
+# One stack, two uses. Locally: `docker compose up cube` and run uvicorn by hand,
+# or bring the whole thing up. On the EC2 host: the same file, with SITE_ADDRESS
+# set to the public hostname so Caddy gets a certificate.
+services:
+  cube:
+    image: cubejs/cube:v1.3.79
+    container_name: phantom-cube
+    restart: unless-stopped
+    # Loopback only. The API reaches Cube over the compose network either way;
+    # this is so a developer on the host can hit the playground and run the
+    # tools directly. Bound to 127.0.0.1, it is not reachable from outside the
+    # machine, on a laptop or on the server.
+    ports:
+      - "127.0.0.1:4000:4000"
+    expose:
+      - "4000"
+    environment:
+      CUBEJS_DEV_MODE: ${CUBEJS_DEV_MODE:-true}
+      CUBEJS_DB_TYPE: duckdb
+      # No database path: Cube runs an in-memory DuckDB and reads the mart
+      # parquet files. That keeps build_marts.py free to rebuild the warehouse
+      # while Cube is running, no file lock and no restart.
+      CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-local-dev-secret-change-me}
+      CUBEJS_LOG_LEVEL: ${CUBEJS_LOG_LEVEL:-warn}
+      # With dev mode off Cube expects a separate Cube Store for its queue and
+      # cache. One box, one process, no cluster: the in-memory driver is the
+      # honest choice here and saves a fourth container on a 2 GB instance.
+      CUBEJS_CACHE_AND_QUEUE_DRIVER: memory
+    volumes:
+      - ./cube/model:/cube/conf/model
+      - ./marts:/data:ro
+    # The image ships neither curl nor wget, so the check has to use the node
+    # that is already in it. The previous curl check could never pass, which
+    # left the container permanently unhealthy.
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/readyz',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api:
+    build: .
+    container_name: phantom-api
+    restart: unless-stopped
+    # Started, not healthy. If Cube is slow or its check misbehaves the API must
+    # still come up: replay mode needs no semantic layer, and a tool that cannot
+    # reach Cube returns a clear 503 rather than a wrong answer.
+    depends_on:
+      cube:
+        condition: service_started
+    environment:
+      CUBE_URL: http://cube:4000/cubejs-api/v1
+      # Same secret both sides: Cube verifies the token the API signs with it.
+      CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:-local-dev-secret-change-me}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-5}
+      COPILOT_MODE: ${COPILOT_MODE:-replay}
+      APP_MODE: ${APP_MODE:-production}
+      DEMO_USER: ${DEMO_USER:-}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-1}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    expose:
+      - "8000"
+    # Published on loopback only, so the host can curl it without opening a
+    # second public port. Caddy is the only way in from outside.
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: phantom-caddy
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

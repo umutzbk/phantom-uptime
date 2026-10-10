@@ -1,0 +1,621 @@
+{
+  "question": "What is the commercial impact?",
+  "mode": "live",
+  "answer": "Across the pilot period (6 August to 4 September 2026, as of 4 September 2026), the detected silent failures carry an estimated \u00a312,648.95 of revenue at risk on 26 chargers. Three of those episodes were still running at the as-of date, at an ongoing loss rate of \u00a3707.92 per day. These are estimates for operational prioritisation, not accounting-grade lost revenue.\n\nThe reliability context: reported reliability, which is status-derived uptime, was 99.26%, while delivered reliability, based on successful driver charging outcomes, was 95.29%, a gap of 3.96 percentage points. Of the 4.71 point delivered failure rate, 0.40 points sit on the 26 detected chargers and are actionable through dispatch. The remaining 4.30 points are diffuse baseline failure spread across the estate: declines, handshake errors, drivers abandoning sessions. That part will not be recovered by sending an engineer anywhere.\n\nThe monitoring point is that none of the 26 detected chargers appear in the operations alert queue, which held 123 open alerts across 106 devices. The existing rules watch the fault log, so a unit that reports healthy while delivering nothing stays invisible. Ranked by dispatch priority (running episodes first, then daily loss rate), the lead unit is CHG-0034 at Birmingham Motorway 006: 63 attempts, none successful, against same-site peers at 95.75%, with \u00a31,151.24 at risk over its three-day episode.\n\nTwo limits worth stating. Detection is deliberately conservative, so short or low-traffic episodes fall below threshold and are not counted here. And this is synthetic demonstration data on a Midlands and North pilot estate: nothing here is a finding about any real operator. I can cost any individual charger or break the picture down by region if that is useful.",
+  "plan": [
+    "I will pull the estate-level picture first."
+  ],
+  "tool_calls": [
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 444,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_alert_blindspot",
+      "arguments": {},
+      "ms": 307,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "visible_alert_count": 123,
+        "visible_alert_device_count": 106,
+        "silent_failure_count": 26,
+        "alert_silent_overlap": 0,
+        "still_failing_now": 3,
+        "hidden_revenue_at_risk_gbp": 12648.95,
+        "hidden_daily_loss_rate_gbp": 3509.89,
+        "ongoing_daily_loss_rate_gbp": 707.92,
+        "pilot_chargers": 600,
+        "pilot_stations": 150
+      },
+      "result": {
+        "tool": "get_alert_blindspot",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "visible_alert_count": 123,
+          "visible_alert_device_count": 106,
+          "silent_failure_count": 26,
+          "alert_silent_overlap": 0,
+          "still_failing_now": 3,
+          "hidden_revenue_at_risk_gbp": 12648.95,
+          "hidden_daily_loss_rate_gbp": 3509.89,
+          "ongoing_daily_loss_rate_gbp": 707.92,
+          "pilot_chargers": 600,
+          "pilot_stations": 150
+        },
+        "metric_definitions": {
+          "visible_alert_count": "Alerts currently open in the operations queue.",
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "alert_silent_overlap": "How many detected silent failures also appear in the alert queue. Zero is the finding: none of them do.",
+          "hidden_revenue_at_risk": "Total estimated revenue at risk across detected silent failures for the observed period. An estimate for operational prioritisation, not an accounting-grade lost-revenue figure."
+        },
+        "assumptions": [
+          "The existing alert rules watch the fault log, so they can only surface conditions that produced a fault.",
+          "Detected silent failures are units whose delivered performance is materially below same-site peers while status reporting shows them operational."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "find_silent_failures",
+      "arguments": {
+        "limit": 5
+      },
+      "ms": 175,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "returned": 5,
+        "top": [
+          {
+            "charger_id": "CHG-0034",
+            "station_name": "Birmingham Motorway 006",
+            "failure_pattern": "silent_total",
+            "daily_loss_rate_gbp": 383.75
+          },
+          {
+            "charger_id": "CHG-0501",
+            "station_name": "Leicester Airport 127",
+            "failure_pattern": "connector_fault_partial",
+            "daily_loss_rate_gbp": 171.28
+          },
+          {
+            "charger_id": "CHG-0023",
+            "station_name": "Birmingham City Centre 004",
+            "failure_pattern": "aborted_short",
+            "daily_loss_rate_gbp": 152.89
+          }
+        ]
+      },
+      "result": {
+        "tool": "find_silent_failures",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "returned": 5,
+          "ranking": "dispatch_priority",
+          "chargers": [
+            {
+              "charger_id": "CHG-0034",
+              "station_name": "Birmingham Motorway 006",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 1,
+              "observed_start": "2026-09-02",
+              "observed_end": "2026-09-04",
+              "window_days": 3,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.75,
+              "attempted_sessions": 63,
+              "failed_sessions": 63,
+              "estimated_revenue_at_risk_gbp": 1151.24,
+              "daily_loss_rate_gbp": 383.75,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0501",
+              "station_name": "Leicester Airport 127",
+              "city": "Leicester",
+              "region": "East Midlands",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 2,
+              "observed_start": "2026-08-30",
+              "observed_end": "2026-09-04",
+              "window_days": 6,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.62,
+              "peer_success_percent": 95.8,
+              "attempted_sessions": 71,
+              "failed_sessions": 45,
+              "estimated_revenue_at_risk_gbp": 1027.69,
+              "daily_loss_rate_gbp": 171.28,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0023",
+              "station_name": "Birmingham City Centre 004",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "aborted_short",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 3,
+              "observed_start": "2026-09-01",
+              "observed_end": "2026-09-04",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 39.53,
+              "peer_success_percent": 92.52,
+              "attempted_sessions": 43,
+              "failed_sessions": 26,
+              "estimated_revenue_at_risk_gbp": 611.56,
+              "daily_loss_rate_gbp": 152.89,
+              "recommended_action": "Investigate session drop-outs - sessions start then terminate early",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0396",
+              "station_name": "Derby Motorway 101",
+              "city": "Derby",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 4,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-27",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.6,
+              "attempted_sessions": 29,
+              "failed_sessions": 29,
+              "estimated_revenue_at_risk_gbp": 393.99,
+              "daily_loss_rate_gbp": 393.99,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0103",
+              "station_name": "Wolverhampton Motorway 023",
+              "city": "Wolverhampton",
+              "region": "West Midlands",
+              "failure_pattern": "low_power",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 5,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-30",
+              "window_days": 5,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 100.0,
+              "peer_success_percent": 93.73,
+              "attempted_sessions": 62,
+              "failed_sessions": 0,
+              "estimated_revenue_at_risk_gbp": 1306.1,
+              "daily_loss_rate_gbp": 261.22,
+              "recommended_action": "Investigate power delivery - sessions succeed but well below rated output",
+              "has_alert": false
+            }
+          ]
+        },
+        "metric_definitions": {
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer",
+          "dispatch_priority": "Triage order. Episodes still running rank first, then by daily loss rate - you dispatch on what is still bleeding, not on sunk cost."
+        },
+        "assumptions": [
+          "A charger is flagged only if its delivered success is materially below same-site peers over the same window while status reporting shows it operational.",
+          "Dispatch priority puts episodes that are still running first, then ranks by daily loss rate - you dispatch on what is still bleeding, not on what has already been lost."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Detection is deliberately conservative. Short or low-traffic episodes fall below the thresholds and will be missed."
+        ]
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "type": "question",
+      "question": "What is the commercial impact?",
+      "model": "claude-opus-5",
+      "effort": "medium",
+      "mode": "live"
+    },
+    {
+      "type": "thought",
+      "text": "I will pull the estate-level picture first."
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_gap_anatomy",
+      "arguments": {},
+      "ms": 444,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "reported_reliability_percent": 99.26,
+        "delivered_reliability_percent": 95.29,
+        "reliability_gap_points": 3.96,
+        "delivered_failure_rate_points": 4.71,
+        "reported_downtime_points": 0.74,
+        "failure_points_from_detected_devices": 0.4,
+        "failure_points_baseline_diffuse": 4.3,
+        "failed_attempts_total": 7901,
+        "failed_attempts_on_detected_devices": 677,
+        "detected_device_count": 26,
+        "revenue_at_risk_on_detected_devices_gbp": 12648.95
+      },
+      "result": {
+        "tool": "get_gap_anatomy",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "reported_reliability_percent": 99.26,
+          "delivered_reliability_percent": 95.29,
+          "reliability_gap_points": 3.96,
+          "delivered_failure_rate_points": 4.71,
+          "reported_downtime_points": 0.74,
+          "failure_points_from_detected_devices": 0.4,
+          "failure_points_baseline_diffuse": 4.3,
+          "failed_attempts_total": 7901,
+          "failed_attempts_on_detected_devices": 677,
+          "detected_device_count": 26,
+          "revenue_at_risk_on_detected_devices_gbp": 12648.95
+        },
+        "metric_definitions": {
+          "reliability_gap_points": "reported_reliability_percent minus delivered_reliability_percent, in percentage points. NOT the failure rate - the two differ by the downtime that status reporting already captures.",
+          "delivered_failure_rate_points": "Share of attempts that failed, in percentage points. Equals reliability_gap_points plus reported_downtime_points.",
+          "failure_points_from_detected_devices": "Portion of the delivered failure rate attributable to chargers the detector flagged. This is the actionable part.",
+          "failure_points_baseline_diffuse": "Portion of the delivered failure rate spread thinly across the estate - declines, handshake failures, drivers giving up. Not fixable by dispatching an engineer."
+        },
+        "assumptions": [
+          "The gap equals the delivered failure rate minus the downtime that status reporting already captures.",
+          "Failures on detected devices are treated as the actionable share; everything else is diffuse baseline failure."
+        ],
+        "evidence": {},
+        "caveats": [
+          "The decomposition splits the FAILURE RATE, not the gap. Failure rate minus reported downtime equals the gap.",
+          "Baseline failures - declines, handshake errors, drivers giving up - are not fixable by dispatching an engineer."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_alert_blindspot",
+      "arguments": {},
+      "ms": 307,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "visible_alert_count": 123,
+        "visible_alert_device_count": 106,
+        "silent_failure_count": 26,
+        "alert_silent_overlap": 0,
+        "still_failing_now": 3,
+        "hidden_revenue_at_risk_gbp": 12648.95,
+        "hidden_daily_loss_rate_gbp": 3509.89,
+        "ongoing_daily_loss_rate_gbp": 707.92,
+        "pilot_chargers": 600,
+        "pilot_stations": 150
+      },
+      "result": {
+        "tool": "get_alert_blindspot",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "visible_alert_count": 123,
+          "visible_alert_device_count": 106,
+          "silent_failure_count": 26,
+          "alert_silent_overlap": 0,
+          "still_failing_now": 3,
+          "hidden_revenue_at_risk_gbp": 12648.95,
+          "hidden_daily_loss_rate_gbp": 3509.89,
+          "ongoing_daily_loss_rate_gbp": 707.92,
+          "pilot_chargers": 600,
+          "pilot_stations": 150
+        },
+        "metric_definitions": {
+          "visible_alert_count": "Alerts currently open in the operations queue.",
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "alert_silent_overlap": "How many detected silent failures also appear in the alert queue. Zero is the finding: none of them do.",
+          "hidden_revenue_at_risk": "Total estimated revenue at risk across detected silent failures for the observed period. An estimate for operational prioritisation, not an accounting-grade lost-revenue figure."
+        },
+        "assumptions": [
+          "The existing alert rules watch the fault log, so they can only surface conditions that produced a fault.",
+          "Detected silent failures are units whose delivered performance is materially below same-site peers while status reporting shows them operational."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "find_silent_failures",
+      "arguments": {
+        "limit": 5
+      },
+      "ms": 175,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "returned": 5,
+        "top": [
+          {
+            "charger_id": "CHG-0034",
+            "station_name": "Birmingham Motorway 006",
+            "failure_pattern": "silent_total",
+            "daily_loss_rate_gbp": 383.75
+          },
+          {
+            "charger_id": "CHG-0501",
+            "station_name": "Leicester Airport 127",
+            "failure_pattern": "connector_fault_partial",
+            "daily_loss_rate_gbp": 171.28
+          },
+          {
+            "charger_id": "CHG-0023",
+            "station_name": "Birmingham City Centre 004",
+            "failure_pattern": "aborted_short",
+            "daily_loss_rate_gbp": 152.89
+          }
+        ]
+      },
+      "result": {
+        "tool": "find_silent_failures",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "returned": 5,
+          "ranking": "dispatch_priority",
+          "chargers": [
+            {
+              "charger_id": "CHG-0034",
+              "station_name": "Birmingham Motorway 006",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 1,
+              "observed_start": "2026-09-02",
+              "observed_end": "2026-09-04",
+              "window_days": 3,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.75,
+              "attempted_sessions": 63,
+              "failed_sessions": 63,
+              "estimated_revenue_at_risk_gbp": 1151.24,
+              "daily_loss_rate_gbp": 383.75,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0501",
+              "station_name": "Leicester Airport 127",
+              "city": "Leicester",
+              "region": "East Midlands",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 2,
+              "observed_start": "2026-08-30",
+              "observed_end": "2026-09-04",
+              "window_days": 6,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.62,
+              "peer_success_percent": 95.8,
+              "attempted_sessions": 71,
+              "failed_sessions": 45,
+              "estimated_revenue_at_risk_gbp": 1027.69,
+              "daily_loss_rate_gbp": 171.28,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0023",
+              "station_name": "Birmingham City Centre 004",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "aborted_short",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 3,
+              "observed_start": "2026-09-01",
+              "observed_end": "2026-09-04",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 39.53,
+              "peer_success_percent": 92.52,
+              "attempted_sessions": 43,
+              "failed_sessions": 26,
+              "estimated_revenue_at_risk_gbp": 611.56,
+              "daily_loss_rate_gbp": 152.89,
+              "recommended_action": "Investigate session drop-outs - sessions start then terminate early",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0396",
+              "station_name": "Derby Motorway 101",
+              "city": "Derby",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 4,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-27",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.6,
+              "attempted_sessions": 29,
+              "failed_sessions": 29,
+              "estimated_revenue_at_risk_gbp": 393.99,
+              "daily_loss_rate_gbp": 393.99,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0103",
+              "station_name": "Wolverhampton Motorway 023",
+              "city": "Wolverhampton",
+              "region": "West Midlands",
+              "failure_pattern": "low_power",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 5,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-30",
+              "window_days": 5,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 100.0,
+              "peer_success_percent": 93.73,
+              "attempted_sessions": 62,
+              "failed_sessions": 0,
+              "estimated_revenue_at_risk_gbp": 1306.1,
+              "daily_loss_rate_gbp": 261.22,
+              "recommended_action": "Investigate power delivery - sessions succeed but well below rated output",
+              "has_alert": false
+            }
+          ]
+        },
+        "metric_definitions": {
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer",
+          "dispatch_priority": "Triage order. Episodes still running rank first, then by daily loss rate - you dispatch on what is still bleeding, not on sunk cost."
+        },
+        "assumptions": [
+          "A charger is flagged only if its delivered success is materially below same-site peers over the same window while status reporting shows it operational.",
+          "Dispatch priority puts episodes that are still running first, then ranks by daily loss rate - you dispatch on what is still bleeding, not on what has already been lost."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Detection is deliberately conservative. Short or low-traffic episodes fall below the thresholds and will be missed."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "answer",
+      "text": "Across the pilot period (6 August to 4 September 2026, as of 4 September 2026), the detected silent failures carry an estimated \u00a312,648.95 of revenue at risk on 26 chargers. Three of those episodes were still running at the as-of date, at an ongoing loss rate of \u00a3707.92 per day. These are estimates for operational prioritisation, not accounting-grade lost revenue.\n\nThe reliability context: reported reliability, which is status-derived uptime, was 99.26%, while delivered reliability, based on successful driver charging outcomes, was 95.29%, a gap of 3.96 percentage points. Of the 4.71 point delivered failure rate, 0.40 points sit on the 26 detected chargers and are actionable through dispatch. The remaining 4.30 points are diffuse baseline failure spread across the estate: declines, handshake errors, drivers abandoning sessions. That part will not be recovered by sending an engineer anywhere.\n\nThe monitoring point is that none of the 26 detected chargers appear in the operations alert queue, which held 123 open alerts across 106 devices. The existing rules watch the fault log, so a unit that reports healthy while delivering nothing stays invisible. Ranked by dispatch priority (running episodes first, then daily loss rate), the lead unit is CHG-0034 at Birmingham Motorway 006: 63 attempts, none successful, against same-site peers at 95.75%, with \u00a31,151.24 at risk over its three-day episode.\n\nTwo limits worth stating. Detection is deliberately conservative, so short or low-traffic episodes fall below threshold and are not counted here. And this is synthetic demonstration data on a Midlands and North pilot estate: nothing here is a finding about any real operator. I can cost any individual charger or break the picture down by region if that is useful."
+    },
+    {
+      "type": "done",
+      "turns": 2,
+      "elapsed_s": 14.8,
+      "usage": {
+        "input_tokens": 7985,
+        "output_tokens": 605
+      }
+    }
+  ],
+  "captured_at": "2026-09-06T22:35:50"
+}

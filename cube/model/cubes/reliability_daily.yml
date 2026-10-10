@@ -1,0 +1,81 @@
+# Reliability by station and day, so the same two metrics can be sliced by
+# date range, region or city without re-deriving them anywhere else.
+#
+# Both percentages are defined as correctly weighted ratios of their own
+# underlying totals - averaging a column of daily percentages would silently
+# weight a quiet Tuesday the same as a busy Saturday.
+
+cubes:
+  - name: reliability_daily
+    description: >
+      Station-by-day reported and delivered reliability for the pilot estate.
+      Use this when a question is scoped to a period, region or city; use
+      reliability_summary for the pilot-wide headline.
+    sql: >
+      SELECT * FROM read_parquet('/data/agg_reliability_daily.parquet')
+
+    dimensions:
+      - name: reliability_date
+        sql: reliability_date
+        type: time
+      - name: station_id
+        sql: station_id
+        type: string
+      - name: region
+        sql: region
+        type: string
+      - name: city
+        sql: city
+        type: string
+
+    measures:
+      - name: reported_reliability_percent
+        description: >
+          Share of charger-time in a non-fault operational status, weighted by
+          minutes. This is the status-derived number an operator publishes.
+        sql: >
+          100.0 * SUM({CUBE}.uptime_minutes) / NULLIF(SUM({CUBE}.total_minutes), 0)
+        type: number
+        format: percent
+
+      - name: delivered_reliability_percent
+        description: >
+          Share of charging attempts that actually delivered energy, weighted by
+          attempts. This is what a driver experiences.
+        sql: >
+          100.0 * SUM({CUBE}.successful_sessions)
+          / NULLIF(SUM({CUBE}.attempted_sessions), 0)
+        type: number
+        format: percent
+
+      - name: reliability_gap_points
+        description: >
+          reported minus delivered, in percentage points. Not the failure rate:
+          the two differ by the downtime status reporting already captures.
+        sql: >
+          100.0 * SUM({CUBE}.uptime_minutes) / NULLIF(SUM({CUBE}.total_minutes), 0)
+          - 100.0 * SUM({CUBE}.successful_sessions)
+            / NULLIF(SUM({CUBE}.attempted_sessions), 0)
+        type: number
+
+      - name: attempted_sessions
+        sql: attempted_sessions
+        type: sum
+      - name: successful_sessions
+        sql: successful_sessions
+        type: sum
+      - name: failed_sessions
+        sql: failed_sessions
+        type: sum
+      - name: kwh_delivered
+        sql: kwh_delivered
+        type: sum
+      - name: zero_kwh_sessions
+        sql: zero_kwh_sessions
+        type: sum
+      - name: uptime_minutes
+        sql: uptime_minutes
+        type: sum
+      - name: total_minutes
+        sql: total_minutes
+        type: sum

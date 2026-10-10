@@ -1,0 +1,39 @@
+[project]
+name = "phantom-uptime"
+version = "0.4.0"
+description = "Governed, tool-calling reliability investigation over Cube-defined metrics"
+requires-python = ">=3.12"
+
+# ----------------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+exclude = ["_out_of_scope", "scratch", "backups", "dist"]
+
+[tool.ruff.lint]
+# Correctness and hygiene, not house style. UP (pyupgrade) is left out on
+# purpose: the codebase uses .format() consistently and rewriting every call
+# site to f-strings would be churn with no defect fixed.
+select = ["E", "F", "W", "B"]
+ignore = [
+    # Short local aliases like `g = lambda r, k: cube.num(r.get(k))` read better
+    # than a def in the middle of a query builder. Rewriting seven of them would
+    # be churn, not an improvement, so the rule is off deliberately rather than
+    # silenced line by line.
+    "E731",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The simulator and the mart builder are long procedural scripts by design.
+"simulate_source_systems.py" = ["E501"]
+"build_marts.py" = ["E501"]
+
+# --------------------------------------------------------------------- bandit
+[tool.bandit]
+# What gets scanned is what gets served. The simulator and the mart builder run
+# on a laptop to produce fixtures and never see a request, and scanning them
+# reports the two things you would expect from a data generator: `random` is not
+# cryptographic (it is a fixture, and seeded on purpose so runs reproduce) and
+# SQL is assembled from constants in the code. Neither is a finding about the
+# application, and carrying them as permanent noise would train everyone to
+# ignore the report.
+exclude_dirs = ["_out_of_scope", "scratch", "backups", "dist", "web", "cube"]

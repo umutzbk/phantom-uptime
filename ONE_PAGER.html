@@ -1,0 +1,293 @@
+<meta charset="utf-8">
+<title>Phantom Uptime</title>
+<style>
+  :root{
+    --ink:#111111; --ink-2:#3a3a3a; --muted:#6b6b6b;
+    --signal:#E1251B; --signal-soft:#FDECEA;
+    --rule:#DBDBDB; --paper:#FFFFFF; --wash:#F5F5F5;
+  }
+  @page{ size:A4; margin:10mm 11mm 8mm; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#E9E9E9; color:var(--ink);
+        font:10px/1.4 "Helvetica Neue",Helvetica,Arial,sans-serif;
+        -webkit-font-smoothing:antialiased; }
+  .sheet{ width:210mm; min-height:297mm; margin:14px auto; padding:10mm 11mm 8mm;
+          background:var(--paper); box-shadow:0 2px 18px rgba(0,0,0,.16); }
+
+  /* ---------------------------------------------------------------- header */
+  .top{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  h1{ font-size:19px; line-height:1.08; margin:0; letter-spacing:-.4px; }
+  .sub{ font-size:10.5px; color:var(--ink-2); margin:4px 0 0; }
+  .byline{ font-size:8.4px; color:var(--muted); margin-top:4px; letter-spacing:.02em; }
+
+  .anchor{ text-align:right; flex:0 0 auto; padding-left:14px;
+           border-left:1px solid var(--rule); }
+  .anchor .lbl{ font-size:6.9px; letter-spacing:.16em; text-transform:uppercase;
+                color:var(--muted); font-weight:600; }
+  .wordmark{ display:flex; align-items:center; justify-content:flex-end; gap:6px;
+             margin-top:5px; }
+  .wordmark img{ height:19px; width:auto; display:block; }
+  .wordmark .bar{ width:5px; height:26px; background:var(--signal); border-radius:1px; }
+  .wordmark .nm{ font-size:29px; font-weight:700; letter-spacing:-1.1px; line-height:1; }
+  .anchor .meta{ font-size:7.6px; color:var(--muted); margin-top:3px; letter-spacing:.02em; }
+
+  .note{ margin:7px 0 8px; padding:4px 0 4px 8px; border-left:2px solid var(--signal);
+         font-size:7.9px; line-height:1.4; color:var(--muted); }
+  .note b{ color:var(--ink-2); font-weight:600; }
+
+  /* ---------------------------------------------------------------- layout */
+  .cols{ display:grid; grid-template-columns:1fr 1fr; gap:0 13px; }
+  section{ margin-bottom:8px; break-inside:avoid; }
+  h2{ font-size:7.9px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+      margin:0 0 4px; padding-bottom:2.5px; border-bottom:1px solid var(--rule);
+      font-weight:600; }
+  p{ margin:0 0 5px; color:var(--ink-2); }
+  /* A drawn dot rather than the font's disc glyph. At this size the native
+     marker sat half outside the 12px padding and printed clipped, and which
+     glyph you got depended on the font that answered for it. */
+  ul{ margin:0 0 5px; padding-left:0; list-style:none; }
+  ul li{ position:relative; padding-left:11px; margin-bottom:2.2px; color:var(--ink-2); }
+  ul li::before{ content:""; position:absolute; left:2px; top:.47em;
+                 width:3px; height:3px; border-radius:50%; background:var(--muted); }
+  b,strong{ color:var(--ink); font-weight:600; }
+  .lede{ font-size:11.2px; line-height:1.28; color:var(--ink); font-weight:600;
+         margin:0 0 5px; letter-spacing:-.15px; }
+  .close{ font-size:9.2px; color:var(--ink); margin:0; padding-top:4px;
+          border-top:1px solid var(--rule); }
+
+  /* ---------------------------------------------------------------- kpis */
+  .finding{ border:1px solid var(--signal); background:var(--signal-soft);
+            padding:7px 10px; margin-bottom:8px; }
+  .finding .k{ font-size:7.4px; letter-spacing:.11em; text-transform:uppercase;
+               color:var(--signal); font-weight:700; margin-bottom:5px; }
+  .kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px 8px; }
+  .kpi .v{ font-size:14.5px; font-weight:700; line-height:1; letter-spacing:-.5px; }
+  .kpi .v small{ font-size:9px; font-weight:700; }
+  .kpi .v.red{ color:var(--signal); }
+  .kpi .l{ font-size:6.9px; letter-spacing:.07em; text-transform:uppercase;
+           color:var(--muted); margin-top:3px; line-height:1.25; }
+  .finding p{ margin:6px 0 0; padding-top:5px; border-top:1px solid rgba(225,37,27,.28);
+              font-size:8.7px; color:var(--ink); }
+
+  /* ---------------------------------------------------------------- flow */
+  .node{ border:1px solid var(--rule); padding:4px 8px; background:var(--paper); }
+  .node .t{ font-size:8.7px; font-weight:600; color:var(--ink); }
+  .node .d{ font-size:7.8px; color:var(--muted); line-height:1.35; }
+  .node.gov{ border-color:var(--ink); background:var(--wash); }
+  .node.model{ border-color:var(--signal); background:var(--signal-soft); }
+  .arrow{ text-align:center; font-size:9px; color:var(--muted); line-height:1;
+          padding:2.5px 0; }
+  .flow-note{ font-size:8.1px; color:var(--ink-2); margin-top:5px; line-height:1.42;
+              padding-left:8px; border-left:2px solid var(--ink); }
+
+  /* ---------------------------------------------------------------- example */
+  .hero{ border:1px solid var(--ink); }
+  .hero .hd{ background:#111; color:#fff; padding:4.5px 9px; font-size:8.5px;
+             font-weight:600; }
+  .hero .bd{ padding:6px 9px; }
+  .row{ display:flex; justify-content:space-between; gap:8px; padding:1.5px 0;
+        border-bottom:1px dotted var(--rule); font-size:8.7px; }
+  .row:last-of-type{ border-bottom:0; }
+  .row span:first-child{ color:var(--muted); }
+  .row span:last-child{ font-weight:600; text-align:right; }
+  .row .red{ color:var(--signal); }
+  .verdict{ margin-top:5px; padding-top:5px; border-top:1px solid var(--ink);
+            font-size:8.7px; color:var(--ink); }
+
+  ol{ margin:0; padding-left:13px; }
+  ol li{ margin-bottom:2.6px; }
+  ol li i{ font-style:normal; color:var(--muted); }
+
+  @media print{
+    body{ background:#fff; }
+    .sheet{ width:auto; min-height:0; margin:0; padding:0; box-shadow:none; }
+  }
+</style>
+
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <h1>Phantom Uptime</h1>
+      <p class="sub">Finding the rapid-charger failures that never reach the alert queue.</p>
+      <p class="byline">Agentic reliability copilot · Umut Özbağrıaçık · 2026</p>
+    </div>
+    <div class="anchor">
+      <div class="lbl">Fictional operator</div>
+      <div class="wordmark">
+        <span id="wmText" style="display:flex;align-items:center;gap:6px">
+          <span class="bar"></span><span class="nm" style="font-size:15px">Voltway Networks</span></span>
+      </div>
+      <div class="meta">Synthetic pilot · 600 chargers · 150 sites · Midlands &amp; North</div>
+    </div>
+  </div>
+
+  <div class="note"><b>Synthetic scenario.</b> Voltway Networks is a fictional operator.
+    All data, metrics and findings are generated, no real operator or customer data is used,
+    and the prototype acts on no real system.</div>
+
+  <div class="cols">
+    <div>
+
+      <section>
+        <h2>The problem</h2>
+        <p>Rapid EV charging is one of the few sectors where reliability is at once a
+        <b>regulated and published number</b> and a direct revenue line.</p>
+        <p class="lede">A charger can look compliant to the reporting layer, healthy to the
+        alerting system, and dead to the driver.</p>
+        <p>Under the <b>UK Public Charge Point Regulations 2023</b>, a network's 50kW+ rapid
+        public charge points are measured against a <b>99% average reliability requirement</b>
+        across the calendar year, computed from charge point status data. A unit that keeps
+        reporting operational
+        statuses can look healthy in status-derived reporting while driver outcomes fail, and it
+        stays out of an alert queue built from the fault log, however many drivers it turns away.
+        That makes one failure both a <b>compliance exposure</b> and a <b>commercial blind
+        spot</b>: lost sessions, lost kWh, site-partner friction and driver trust.</p>
+        <ul>
+          <li><b>Reported reliability</b> is status-derived uptime, a share of <i>time</i>.</li>
+          <li><b>Delivered reliability</b> is the share of driver attempts that transferred
+              energy, a share of <i>attempts</i>.</li>
+          <li>Different denominators, so these are not two versions of one number.</li>
+          <li>A silent failure runs <b>Available → Preparing → Available</b>: never Charging,
+              never Faulted, nothing for the alert queue to work.</li>
+        </ul>
+        <p class="close">The core problem is the gap between reported and delivered reliability,
+        and the fact that the alert queue may not contain the chargers doing the commercial
+        damage.</p>
+      </section>
+
+      <div class="finding">
+        <div class="k">What the pilot data shows</div>
+        <div class="kpis">
+          <div class="kpi"><div class="v">99.26<small>%</small></div>
+            <div class="l">reported reliability</div></div>
+          <div class="kpi"><div class="v">95.29<small>%</small></div>
+            <div class="l">delivered reliability</div></div>
+          <div class="kpi"><div class="v red">3.96<small>pts</small></div>
+            <div class="l">the gap</div></div>
+          <div class="kpi"><div class="v red">0</div>
+            <div class="l">alert overlap</div></div>
+          <div class="kpi"><div class="v red">£12.6<small>k</small></div>
+            <div class="l">hidden revenue at risk</div></div>
+          <div class="kpi"><div class="v red">£708<small>/day</small></div>
+            <div class="l">ongoing leakage</div></div>
+        </div>
+        <p><b>123 alerts across 106 devices. 26 high-confidence silent failures. Not one
+          charger appears in both.</b> Three of those episodes are still running today.</p>
+      </div>
+
+      <section>
+        <h2>Worked example</h2>
+        <div class="hero">
+          <div class="hd">CHG-0034 · Birmingham Motorway 006 · 2–4 September</div>
+          <div class="bd">
+            <div class="row"><span>Last successful charge</span>
+              <span>1 Sept, 23:41 → 00:05</span></div>
+            <div class="row"><span>Attempts since</span><span>63</span></div>
+            <div class="row"><span>Successful</span><span class="red">0</span></div>
+            <div class="row"><span>Energy delivered</span><span class="red">0 kWh</span></div>
+            <div class="row"><span>Reported uptime</span><span>100%</span></div>
+            <div class="row"><span>Faults · alerts raised</span><span>0 · 0</span></div>
+            <div class="row"><span>The 5 other chargers on site</span><span>95.75% success</span></div>
+            <div class="row"><span>Revenue at risk · still running</span>
+              <span class="red">£1,151 · £384/day</span></div>
+            <div class="verdict"><b>The first engineer goes here</b>, not because this unit has
+              lost the most so far, but because it is the one still losing. No fault state or
+              alert was ever triggered, so it never entered the operations queue at all.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Assumptions</h2>
+        <ul>
+          <li>All operational data is synthetic; every finding is fictional and describes no real
+              operator.</li>
+          <li>The pilot covers 600 chargers across 150 sites in the Midlands and the North of
+              England over one month, so it says nothing about seasonality or the wider estate.</li>
+          <li>Reported reliability is modelled as uptime across non-fault operational statuses;
+              delivered reliability counts an attempt as successful when energy was transferred.
+              Which statuses count is the assumption most likely to differ in production.</li>
+          <li>Revenue figures are estimates for operational prioritisation, not accounting-grade
+              lost revenue, and assume a turned-away driver did not simply use the next unit.</li>
+          <li>Nothing is dispatched, sent or ticketed without a person approving it.</li>
+        </ul>
+      </section>
+
+    </div>
+    <div>
+
+      <section>
+        <h2>Solution architecture</h2>
+        <div class="node"><div class="t">Operational source data</div>
+          <div class="d">OCPP status · charging attempts · payments · faults · alerts</div></div>
+        <div class="arrow">↓</div>
+        <div class="node"><div class="t">OLTP → OLAP transformation</div>
+          <div class="d">DuckDB SQL builds the analytical marts</div></div>
+        <div class="arrow">↓</div>
+        <div class="node"><div class="t">Analytical marts</div>
+          <div class="d">reliability · silent failures · alert blind spot · commercial impact</div></div>
+        <div class="arrow">↓</div>
+        <div class="node gov"><div class="t">Cube semantic layer</div>
+          <div class="d">governed metrics and definitions, travelling with every value</div></div>
+        <div class="arrow">↓</div>
+        <div class="node gov"><div class="t">Approved tools</div>
+          <div class="d">reliability · blind spot · evidence · impact · action draft</div></div>
+        <div class="arrow">↓</div>
+        <div class="node model"><div class="t">Tool-calling agent</div>
+          <div class="d">investigates, explains the evidence, recommends the dispatch</div></div>
+        <div class="arrow">↓</div>
+        <div class="node"><div class="t">Copilot interface</div>
+          <div class="d">dashboard · trace · evidence · human-approved action</div></div>
+        <p class="flow-note">The model does not query raw data, write SQL, or invent metric
+        definitions. Cube owns the metrics; approved tools own the arithmetic; the model chooses
+        which tool to call and how to argue the result.</p>
+      </section>
+
+      <section>
+        <h2>Trust and governance</h2>
+        <ul>
+          <li><b>Conservative detection.</b> High-confidence, actionable failures are preferred
+              over a noisy queue: 26 of 35 seeded impairments found, no false positives.</li>
+          <li><b>Governed metrics.</b> Cube owns every definition; the model cannot invent a
+              calculation or reach the tables underneath.</li>
+          <li><b>Trace validation.</b> Every important figure in an answer is matched in code to
+              a tool output, on the server, so an API caller gets the same check as a viewer.
+              Across the recorded set that is 116 figures, none unsourced. The same code runs in
+              CI on every push, alongside the detector's own 28 checks.</li>
+          <li><b>Detection from data.</b> Silent failures are found in SQL, never read from the
+              generator's own record of what it planted. A test enforces that.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Questions for a real deployment</h2>
+        <ol>
+          <li>How is reliability calculated and published today, and <b>which charge point
+              statuses are included in or excluded from uptime?</b>
+              <i>Whether Preparing counts materially affects this pattern and how it shows up
+              in reported reliability.</i></li>
+          <li>Are <b>delivered outcomes</b> (attempts that transferred energy) measured anywhere
+              today, or only uptime?</li>
+          <li>Which failure modes does the current alerting miss, and how do they surface:
+              driver complaints, the site partner, a field visit?</li>
+          <li>How is <b>the first engineer</b> chosen today: severity, revenue, contractual
+              commitment, or geography?</li>
+          <li>What evidence is needed before acting on a charger that reports itself healthy?</li>
+          <li>Who owns the reliability number commercially, and <b>what happens if it is
+              restated downward?</b> <i>Technical fix, political problem.</i></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Deliberately out of scope</h2>
+        <p>No live OCPP connection, no ticketing integration, no pricing engine, and no
+        second model provider behind an abstraction that has one implementation. Known
+        integration work was left out on purpose. The question worth prototyping was whether an
+        agent can produce trusted, evidence-backed operational judgement.</p>
+      </section>
+
+    </div>
+  </div>
+
+</div>

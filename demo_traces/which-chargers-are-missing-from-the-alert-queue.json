@@ -1,0 +1,715 @@
+{
+  "question": "Which chargers are missing from the alert queue?",
+  "mode": "live",
+  "answer": "All of them. As of 4 September 2026, detection flagged 26 chargers as impaired while their status reporting showed them healthy, and none of the 26 appear anywhere in the operations alert queue (123 open alerts across 106 devices). The reason is structural: the existing rules watch the fault log, so they can only surface conditions that produced a fault. These units reported themselves available throughout.\n\nThree of the 26 episodes were still running at the as-of date. In dispatch priority order (still-running episodes first, then by daily loss rate) they are: CHG-0034 at Birmingham Motorway 006, reporting 100% uptime while delivering nothing across 63 attempts since 2 September; CHG-0501 at Leicester Airport 127, delivering on 36.62% of 71 attempts against a same-site peer rate of 95.8% since 30 August; and CHG-0023 at Birmingham City Centre 004, delivering on 39.53% of 43 attempts against a peer rate of 92.52% since 1 September.\n\nEstimated revenue at risk across all 26 detected silent failures is \u00a312,648.95 for the observed period (6 August to 4 September 2026), with \u00a3707.92 per day attached to the three episodes still running. Those are prioritisation estimates, not accounting-grade lost revenue.\n\nTwo limits worth noting: detection is deliberately conservative, so short or low-traffic episodes fall below the thresholds and are missed, and this list covers only failures hidden behind a healthy status. It says nothing about whether the 123 existing alerts are being worked. This is a synthetic demonstration estate, not real operator data.",
+  "plan": [],
+  "tool_calls": [
+    {
+      "type": "tool_call",
+      "tool": "get_alert_blindspot",
+      "arguments": {},
+      "ms": 352,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "visible_alert_count": 123,
+        "visible_alert_device_count": 106,
+        "silent_failure_count": 26,
+        "alert_silent_overlap": 0,
+        "still_failing_now": 3,
+        "hidden_revenue_at_risk_gbp": 12648.95,
+        "hidden_daily_loss_rate_gbp": 3509.89,
+        "ongoing_daily_loss_rate_gbp": 707.92,
+        "pilot_chargers": 600,
+        "pilot_stations": 150
+      },
+      "result": {
+        "tool": "get_alert_blindspot",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "visible_alert_count": 123,
+          "visible_alert_device_count": 106,
+          "silent_failure_count": 26,
+          "alert_silent_overlap": 0,
+          "still_failing_now": 3,
+          "hidden_revenue_at_risk_gbp": 12648.95,
+          "hidden_daily_loss_rate_gbp": 3509.89,
+          "ongoing_daily_loss_rate_gbp": 707.92,
+          "pilot_chargers": 600,
+          "pilot_stations": 150
+        },
+        "metric_definitions": {
+          "visible_alert_count": "Alerts currently open in the operations queue.",
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "alert_silent_overlap": "How many detected silent failures also appear in the alert queue. Zero is the finding: none of them do.",
+          "hidden_revenue_at_risk": "Total estimated revenue at risk across detected silent failures for the observed period. An estimate for operational prioritisation, not an accounting-grade lost-revenue figure."
+        },
+        "assumptions": [
+          "The existing alert rules watch the fault log, so they can only surface conditions that produced a fault.",
+          "Detected silent failures are units whose delivered performance is materially below same-site peers while status reporting shows them operational."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "find_silent_failures",
+      "arguments": {
+        "limit": 10
+      },
+      "ms": 231,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "returned": 10,
+        "top": [
+          {
+            "charger_id": "CHG-0034",
+            "station_name": "Birmingham Motorway 006",
+            "failure_pattern": "silent_total",
+            "daily_loss_rate_gbp": 383.75
+          },
+          {
+            "charger_id": "CHG-0501",
+            "station_name": "Leicester Airport 127",
+            "failure_pattern": "connector_fault_partial",
+            "daily_loss_rate_gbp": 171.28
+          },
+          {
+            "charger_id": "CHG-0023",
+            "station_name": "Birmingham City Centre 004",
+            "failure_pattern": "aborted_short",
+            "daily_loss_rate_gbp": 152.89
+          }
+        ]
+      },
+      "result": {
+        "tool": "find_silent_failures",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "returned": 10,
+          "ranking": "dispatch_priority",
+          "chargers": [
+            {
+              "charger_id": "CHG-0034",
+              "station_name": "Birmingham Motorway 006",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 1,
+              "observed_start": "2026-09-02",
+              "observed_end": "2026-09-04",
+              "window_days": 3,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.75,
+              "attempted_sessions": 63,
+              "failed_sessions": 63,
+              "estimated_revenue_at_risk_gbp": 1151.24,
+              "daily_loss_rate_gbp": 383.75,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0501",
+              "station_name": "Leicester Airport 127",
+              "city": "Leicester",
+              "region": "East Midlands",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 2,
+              "observed_start": "2026-08-30",
+              "observed_end": "2026-09-04",
+              "window_days": 6,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.62,
+              "peer_success_percent": 95.8,
+              "attempted_sessions": 71,
+              "failed_sessions": 45,
+              "estimated_revenue_at_risk_gbp": 1027.69,
+              "daily_loss_rate_gbp": 171.28,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0023",
+              "station_name": "Birmingham City Centre 004",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "aborted_short",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 3,
+              "observed_start": "2026-09-01",
+              "observed_end": "2026-09-04",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 39.53,
+              "peer_success_percent": 92.52,
+              "attempted_sessions": 43,
+              "failed_sessions": 26,
+              "estimated_revenue_at_risk_gbp": 611.56,
+              "daily_loss_rate_gbp": 152.89,
+              "recommended_action": "Investigate session drop-outs - sessions start then terminate early",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0396",
+              "station_name": "Derby Motorway 101",
+              "city": "Derby",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 4,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-27",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.6,
+              "attempted_sessions": 29,
+              "failed_sessions": 29,
+              "estimated_revenue_at_risk_gbp": 393.99,
+              "daily_loss_rate_gbp": 393.99,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0103",
+              "station_name": "Wolverhampton Motorway 023",
+              "city": "Wolverhampton",
+              "region": "West Midlands",
+              "failure_pattern": "low_power",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 5,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-30",
+              "window_days": 5,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 100.0,
+              "peer_success_percent": 93.73,
+              "attempted_sessions": 62,
+              "failed_sessions": 0,
+              "estimated_revenue_at_risk_gbp": 1306.1,
+              "daily_loss_rate_gbp": 261.22,
+              "recommended_action": "Investigate power delivery - sessions succeed but well below rated output",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0267",
+              "station_name": "Liverpool Motorway 065",
+              "city": "Liverpool",
+              "region": "North West",
+              "failure_pattern": "silent_total",
+              "confidence": "medium",
+              "is_ongoing": false,
+              "dispatch_priority": 6,
+              "observed_start": "2026-08-28",
+              "observed_end": "2026-08-28",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.45,
+              "attempted_sessions": 18,
+              "failed_sessions": 18,
+              "estimated_revenue_at_risk_gbp": 225.17,
+              "daily_loss_rate_gbp": 225.17,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0552",
+              "station_name": "Manchester Motorway 139",
+              "city": "Manchester",
+              "region": "North West",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 7,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-30",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 35.94,
+              "peer_success_percent": 96.03,
+              "attempted_sessions": 64,
+              "failed_sessions": 41,
+              "estimated_revenue_at_risk_gbp": 811.65,
+              "daily_loss_rate_gbp": 202.91,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0040",
+              "station_name": "Manchester Motorway 008",
+              "city": "Manchester",
+              "region": "North West",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 8,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-29",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 38.24,
+              "peer_success_percent": 98.13,
+              "attempted_sessions": 68,
+              "failed_sessions": 42,
+              "estimated_revenue_at_risk_gbp": 730.22,
+              "daily_loss_rate_gbp": 182.56,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0348",
+              "station_name": "Nottingham Retail Park 088",
+              "city": "Nottingham",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "medium",
+              "is_ongoing": false,
+              "dispatch_priority": 9,
+              "observed_start": "2026-08-23",
+              "observed_end": "2026-08-23",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 100.0,
+              "attempted_sessions": 12,
+              "failed_sessions": 12,
+              "estimated_revenue_at_risk_gbp": 161.18,
+              "daily_loss_rate_gbp": 161.18,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0292",
+              "station_name": "Stoke-on-Trent Motorway 072",
+              "city": "Stoke-on-Trent",
+              "region": "West Midlands",
+              "failure_pattern": "payment_terminal",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 10,
+              "observed_start": "2026-08-25",
+              "observed_end": "2026-08-26",
+              "window_days": 2,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.84,
+              "peer_success_percent": 97.6,
+              "attempted_sessions": 38,
+              "failed_sessions": 24,
+              "estimated_revenue_at_risk_gbp": 280.54,
+              "daily_loss_rate_gbp": 140.27,
+              "recommended_action": "Check payment terminal - one auth method is failing while others work",
+              "has_alert": false
+            }
+          ]
+        },
+        "metric_definitions": {
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer",
+          "dispatch_priority": "Triage order. Episodes still running rank first, then by daily loss rate - you dispatch on what is still bleeding, not on sunk cost."
+        },
+        "assumptions": [
+          "A charger is flagged only if its delivered success is materially below same-site peers over the same window while status reporting shows it operational.",
+          "Dispatch priority puts episodes that are still running first, then ranks by daily loss rate - you dispatch on what is still bleeding, not on what has already been lost."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Detection is deliberately conservative. Short or low-traffic episodes fall below the thresholds and will be missed."
+        ]
+      },
+      "error": null
+    }
+  ],
+  "events": [
+    {
+      "type": "question",
+      "question": "Which chargers are missing from the alert queue?",
+      "model": "claude-opus-5",
+      "effort": "medium",
+      "mode": "live"
+    },
+    {
+      "type": "tool_call",
+      "tool": "get_alert_blindspot",
+      "arguments": {},
+      "ms": 352,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "visible_alert_count": 123,
+        "visible_alert_device_count": 106,
+        "silent_failure_count": 26,
+        "alert_silent_overlap": 0,
+        "still_failing_now": 3,
+        "hidden_revenue_at_risk_gbp": 12648.95,
+        "hidden_daily_loss_rate_gbp": 3509.89,
+        "ongoing_daily_loss_rate_gbp": 707.92,
+        "pilot_chargers": 600,
+        "pilot_stations": 150
+      },
+      "result": {
+        "tool": "get_alert_blindspot",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "visible_alert_count": 123,
+          "visible_alert_device_count": 106,
+          "silent_failure_count": 26,
+          "alert_silent_overlap": 0,
+          "still_failing_now": 3,
+          "hidden_revenue_at_risk_gbp": 12648.95,
+          "hidden_daily_loss_rate_gbp": 3509.89,
+          "ongoing_daily_loss_rate_gbp": 707.92,
+          "pilot_chargers": 600,
+          "pilot_stations": 150
+        },
+        "metric_definitions": {
+          "visible_alert_count": "Alerts currently open in the operations queue.",
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "alert_silent_overlap": "How many detected silent failures also appear in the alert queue. Zero is the finding: none of them do.",
+          "hidden_revenue_at_risk": "Total estimated revenue at risk across detected silent failures for the observed period. An estimate for operational prioritisation, not an accounting-grade lost-revenue figure."
+        },
+        "assumptions": [
+          "The existing alert rules watch the fault log, so they can only surface conditions that produced a fault.",
+          "Detected silent failures are units whose delivered performance is materially below same-site peers while status reporting shows them operational."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "tool_call",
+      "tool": "find_silent_failures",
+      "arguments": {
+        "limit": 10
+      },
+      "ms": 231,
+      "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+      "as_of": "2026-09-04",
+      "result_summary": {
+        "returned": 10,
+        "top": [
+          {
+            "charger_id": "CHG-0034",
+            "station_name": "Birmingham Motorway 006",
+            "failure_pattern": "silent_total",
+            "daily_loss_rate_gbp": 383.75
+          },
+          {
+            "charger_id": "CHG-0501",
+            "station_name": "Leicester Airport 127",
+            "failure_pattern": "connector_fault_partial",
+            "daily_loss_rate_gbp": 171.28
+          },
+          {
+            "charger_id": "CHG-0023",
+            "station_name": "Birmingham City Centre 004",
+            "failure_pattern": "aborted_short",
+            "daily_loss_rate_gbp": 152.89
+          }
+        ]
+      },
+      "result": {
+        "tool": "find_silent_failures",
+        "source_layer": "Cube semantic layer over analytical marts (no raw table access)",
+        "as_of": "2026-09-04",
+        "period": {
+          "start": "2026-08-06",
+          "end": "2026-09-04",
+          "region": "all pilot regions"
+        },
+        "metrics": {
+          "returned": 10,
+          "ranking": "dispatch_priority",
+          "chargers": [
+            {
+              "charger_id": "CHG-0034",
+              "station_name": "Birmingham Motorway 006",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 1,
+              "observed_start": "2026-09-02",
+              "observed_end": "2026-09-04",
+              "window_days": 3,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.75,
+              "attempted_sessions": 63,
+              "failed_sessions": 63,
+              "estimated_revenue_at_risk_gbp": 1151.24,
+              "daily_loss_rate_gbp": 383.75,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0501",
+              "station_name": "Leicester Airport 127",
+              "city": "Leicester",
+              "region": "East Midlands",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 2,
+              "observed_start": "2026-08-30",
+              "observed_end": "2026-09-04",
+              "window_days": 6,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.62,
+              "peer_success_percent": 95.8,
+              "attempted_sessions": 71,
+              "failed_sessions": 45,
+              "estimated_revenue_at_risk_gbp": 1027.69,
+              "daily_loss_rate_gbp": 171.28,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0023",
+              "station_name": "Birmingham City Centre 004",
+              "city": "Birmingham",
+              "region": "West Midlands",
+              "failure_pattern": "aborted_short",
+              "confidence": "high",
+              "is_ongoing": true,
+              "dispatch_priority": 3,
+              "observed_start": "2026-09-01",
+              "observed_end": "2026-09-04",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 39.53,
+              "peer_success_percent": 92.52,
+              "attempted_sessions": 43,
+              "failed_sessions": 26,
+              "estimated_revenue_at_risk_gbp": 611.56,
+              "daily_loss_rate_gbp": 152.89,
+              "recommended_action": "Investigate session drop-outs - sessions start then terminate early",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0396",
+              "station_name": "Derby Motorway 101",
+              "city": "Derby",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 4,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-27",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.6,
+              "attempted_sessions": 29,
+              "failed_sessions": 29,
+              "estimated_revenue_at_risk_gbp": 393.99,
+              "daily_loss_rate_gbp": 393.99,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0103",
+              "station_name": "Wolverhampton Motorway 023",
+              "city": "Wolverhampton",
+              "region": "West Midlands",
+              "failure_pattern": "low_power",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 5,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-30",
+              "window_days": 5,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 100.0,
+              "peer_success_percent": 93.73,
+              "attempted_sessions": 62,
+              "failed_sessions": 0,
+              "estimated_revenue_at_risk_gbp": 1306.1,
+              "daily_loss_rate_gbp": 261.22,
+              "recommended_action": "Investigate power delivery - sessions succeed but well below rated output",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0267",
+              "station_name": "Liverpool Motorway 065",
+              "city": "Liverpool",
+              "region": "North West",
+              "failure_pattern": "silent_total",
+              "confidence": "medium",
+              "is_ongoing": false,
+              "dispatch_priority": 6,
+              "observed_start": "2026-08-28",
+              "observed_end": "2026-08-28",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 95.45,
+              "attempted_sessions": 18,
+              "failed_sessions": 18,
+              "estimated_revenue_at_risk_gbp": 225.17,
+              "daily_loss_rate_gbp": 225.17,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0552",
+              "station_name": "Manchester Motorway 139",
+              "city": "Manchester",
+              "region": "North West",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 7,
+              "observed_start": "2026-08-27",
+              "observed_end": "2026-08-30",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 35.94,
+              "peer_success_percent": 96.03,
+              "attempted_sessions": 64,
+              "failed_sessions": 41,
+              "estimated_revenue_at_risk_gbp": 811.65,
+              "daily_loss_rate_gbp": 202.91,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0040",
+              "station_name": "Manchester Motorway 008",
+              "city": "Manchester",
+              "region": "North West",
+              "failure_pattern": "connector_fault_partial",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 8,
+              "observed_start": "2026-08-26",
+              "observed_end": "2026-08-29",
+              "window_days": 4,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 38.24,
+              "peer_success_percent": 98.13,
+              "attempted_sessions": 68,
+              "failed_sessions": 42,
+              "estimated_revenue_at_risk_gbp": 730.22,
+              "daily_loss_rate_gbp": 182.56,
+              "recommended_action": "Inspect the affected connector - unit appears available on the other outlet",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0348",
+              "station_name": "Nottingham Retail Park 088",
+              "city": "Nottingham",
+              "region": "East Midlands",
+              "failure_pattern": "silent_total",
+              "confidence": "medium",
+              "is_ongoing": false,
+              "dispatch_priority": 9,
+              "observed_start": "2026-08-23",
+              "observed_end": "2026-08-23",
+              "window_days": 1,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 0.0,
+              "peer_success_percent": 100.0,
+              "attempted_sessions": 12,
+              "failed_sessions": 12,
+              "estimated_revenue_at_risk_gbp": 161.18,
+              "daily_loss_rate_gbp": 161.18,
+              "recommended_action": "Dispatch engineer - physical inspection, unit reports available but delivers nothing",
+              "has_alert": false
+            },
+            {
+              "charger_id": "CHG-0292",
+              "station_name": "Stoke-on-Trent Motorway 072",
+              "city": "Stoke-on-Trent",
+              "region": "West Midlands",
+              "failure_pattern": "payment_terminal",
+              "confidence": "high",
+              "is_ongoing": false,
+              "dispatch_priority": 10,
+              "observed_start": "2026-08-25",
+              "observed_end": "2026-08-26",
+              "window_days": 2,
+              "reported_uptime_percent": 100.0,
+              "delivered_success_percent": 36.84,
+              "peer_success_percent": 97.6,
+              "attempted_sessions": 38,
+              "failed_sessions": 24,
+              "estimated_revenue_at_risk_gbp": 280.54,
+              "daily_loss_rate_gbp": 140.27,
+              "recommended_action": "Check payment terminal - one auth method is failing while others work",
+              "has_alert": false
+            }
+          ]
+        },
+        "metric_definitions": {
+          "silent_failure_count": "Chargers the detector flagged as impaired while status reporting shows them healthy.",
+          "estimated_revenue_at_risk_gbp": "Estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "daily_loss_rate_gbp": "no description published in the semantic layer",
+          "dispatch_priority": "Triage order. Episodes still running rank first, then by daily loss rate - you dispatch on what is still bleeding, not on sunk cost."
+        },
+        "assumptions": [
+          "A charger is flagged only if its delivered success is materially below same-site peers over the same window while status reporting shows it operational.",
+          "Dispatch priority puts episodes that are still running first, then ranks by daily loss rate - you dispatch on what is still bleeding, not on what has already been lost."
+        ],
+        "evidence": {},
+        "caveats": [
+          "This is an estimate for operational prioritisation, not an accounting-grade lost-revenue calculation.",
+          "Detection is deliberately conservative. Short or low-traffic episodes fall below the thresholds and will be missed."
+        ]
+      },
+      "error": null
+    },
+    {
+      "type": "answer",
+      "text": "All of them. As of 4 September 2026, detection flagged 26 chargers as impaired while their status reporting showed them healthy, and none of the 26 appear anywhere in the operations alert queue (123 open alerts across 106 devices). The reason is structural: the existing rules watch the fault log, so they can only surface conditions that produced a fault. These units reported themselves available throughout.\n\nThree of the 26 episodes were still running at the as-of date. In dispatch priority order (still-running episodes first, then by daily loss rate) they are: CHG-0034 at Birmingham Motorway 006, reporting 100% uptime while delivering nothing across 63 attempts since 2 September; CHG-0501 at Leicester Airport 127, delivering on 36.62% of 71 attempts against a same-site peer rate of 95.8% since 30 August; and CHG-0023 at Birmingham City Centre 004, delivering on 39.53% of 43 attempts against a peer rate of 92.52% since 1 September.\n\nEstimated revenue at risk across all 26 detected silent failures is \u00a312,648.95 for the observed period (6 August to 4 September 2026), with \u00a3707.92 per day attached to the three episodes still running. Those are prioritisation estimates, not accounting-grade lost revenue.\n\nTwo limits worth noting: detection is deliberately conservative, so short or low-traffic episodes fall below the thresholds and are missed, and this list covers only failures hidden behind a healthy status. It says nothing about whether the 123 existing alerts are being worked. This is a synthetic demonstration estate, not real operator data."
+    },
+    {
+      "type": "done",
+      "turns": 2,
+      "elapsed_s": 12.6,
+      "usage": {
+        "input_tokens": 8561,
+        "output_tokens": 537
+      }
+    }
+  ],
+  "captured_at": "2026-09-06T22:35:01"
+}
